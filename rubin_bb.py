@@ -16,7 +16,7 @@ for f in filterlist:
     lsst[f] = Bandpass()
     # Use os.path.join to join directory and filenames - it's safer.
     #throughputsFile = os.path.join(throughputsDir, 'total_' + f + '.dat')
-    lsst[f].readThroughput('throughputs/baseline/total_' + f + '.dat')
+    lsst[f].readThroughput('baseline/total_' + f + '.dat')
 
 wave = np.arange(10,1200,0.5)
 
