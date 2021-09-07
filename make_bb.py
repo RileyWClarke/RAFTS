@@ -13,7 +13,7 @@ def make_bb(wavelength, temp, makefile=False):
 
     T = u.Quantity(temp, unit=u.K)
 
-    E_lambda = ((8*np.pi*h*c)/l**5) * (1/(np.exp((h*c)/(l*k*T)) - 1))
+    F_lambda = ((2*h*c**2)/l.to(u.cm)**5) * (1/(np.exp((h*c)/(l.to(u.cm)*k*T)) - 1))
 
-    return E_lambda.value
+    return F_lambda.value
 
