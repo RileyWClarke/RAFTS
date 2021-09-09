@@ -39,9 +39,16 @@ def bb_mags(bb_temp, makeplot=False):
         ax1.legend()
 
     for j,temp in enumerate(bb_temp):
+        #Create SED object, set to blackbody at [temp] K.
         bb = Sed()
         bb.setSED(wave,flambda=make_bb(wave,temp))
 
+        #Rescale zero flux magnitude to SDSS standard
+        fluxNorm = bb.calcFluxNorm(24.80, lsst['r'])
+        # Next, apply this scaling factor to the Sed object.
+        bb.multiplyFluxNorm(fluxNorm)
+
+        #Calculate and save clr magnitudes and differences
         mags = {}
         diffs = {}
         print('{}K Magnitudes'.format(temp))
@@ -50,9 +57,9 @@ def bb_mags(bb_temp, makeplot=False):
             print('%s  %.2f' % (f, mags[f]))
         maglist = list(mags.values())
         for i in range(5):
-            print(filterlist[i]+'-'+filterlist[i+1]+': {0:.2f}'.format(np.abs(maglist[i] - maglist[i+1])))
-            diffs[str(filterlist[i]+'-'+filterlist[i+1])] = np.abs(maglist[i] - maglist[i+1])
-        
+            print(filterlist[i]+'-'+filterlist[i+1]+': {0:.2f}'.format(maglist[i] - maglist[i+1]))
+            diffs[str(filterlist[i]+'-'+filterlist[i+1])] = maglist[i] - maglist[i+1]
+
         if makeplot==True:    
            
             ax2.plot(bb.wavelen, bb.wavelen*bb.flambda, color='k', 
