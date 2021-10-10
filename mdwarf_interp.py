@@ -28,7 +28,9 @@ def mdwarf_interp(fname, x_new, s_left, s_right):
 
     with fits.open(fname, mode="readonly") as hdulist:
         data = hdulist[0].data[0]
-        wave = np.arange(3825,9200,0.1)
+        wstart = hdulist[0].header[3]
+        wstep = hdulist[0].header[5]
+        wave = np.arange(wstart,wstart + len(data)* wstep,wstep)
     
     #take slice where band is non-zero
     wleft = np.where(np.abs(wave - s_left) == np.abs(wave - s_left).min())[0][0]
@@ -42,10 +44,5 @@ def mdwarf_interp(fname, x_new, s_left, s_right):
 
     f = interp1d(swave,sdata)
     sdata = f(sx)
-
-    #plt.plot(wave, data)
-    #plt.xlabel(r'$\lambda \;(\AA)$')
-    #plt.ylabel('Flux')
-    #plt.savefig('Figures/m_spectra.png', dpi=200, bbox_inches='tight')
 
     return sdata,swave

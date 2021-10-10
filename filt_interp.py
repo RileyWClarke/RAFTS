@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import interpolate
+from scipy.interpolate import interp1d
 
 import rubin_sim.photUtils.Bandpass as Bandpass
 import rubin_sim.photUtils.Sed as Sed
 
-def filt_interp(band):
+def filt_interp(band, x_new):
 
     """
     Imports LSST filter
@@ -14,6 +14,9 @@ def filt_interp(band):
     -----------
     band: string
         which LSST band to use (u,g,r,i,z,y)
+
+    x_new: ndarray
+        the array to interpolate on
 
     Returns
     -----------
@@ -33,12 +36,12 @@ def filt_interp(band):
     # Get the throughputs directory using the 'throughputs' package env variables.
     #throughputsDir = os.getenv('LSST_THROUGHPUTS_BASELINE')
     lsst = {}
-    for f in filterlist:
-        lsst[f] = Bandpass()
-        # Use os.path.join to join directory and filenames - it's safer.
-        #throughputsFile = os.path.join(throughputsDir, 'total_' + f + '.dat')
-        lsst[f].readThroughput('baseline/total_' + f + '.dat')
-    
+  
+    lsst[band] = Bandpass()
+    # Use os.path.join to join directory and filenames - it's safer.
+    #throughputsFile = os.path.join(throughputsDir, 'total_' + f + '.dat')
+    lsst[band].readThroughput('baseline/total_' + band + '.dat')
+
     sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
     #Create left slice ind
@@ -61,4 +64,11 @@ def filt_interp(band):
     wleft = np.where(np.abs(w - s_left) == np.abs(w - s_left).min())[0][0]
     wright = np.where(np.abs(w - s_right) == np.abs(w - s_right).min())[0][0]
 
-    return sb[wleft:wright], w[wleft:wright], s_left, s_right
+    xleft = np.where(np.abs(x_new - s_left) == np.abs(x_new - s_left).min())[0][0]
+    xright = np.where(np.abs(x_new - s_right) == np.abs(x_new - s_right).min())[0][0]
+    sx = x_new[xleft:xright]
+
+    f = interp1d(w, sb)
+    sb_new = f(sx)
+
+    return sb_new[wleft:wright], w[wleft:wright], s_left, s_right
