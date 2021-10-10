@@ -1,3 +1,2 @@
 import numpy as np
-
-BBwave = np.arange(0,12000,1)
+BBwave = np.arange(3000,10001,1)

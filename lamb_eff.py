@@ -39,12 +39,6 @@ def lamb_eff(band, temp, mdname, ff = 0.0, normT = -1.0):
     BBwave = np.arange(1,12000,1)
     BBflux = make_bb(BBwave,temp)
 
-    #Normalize BB
-    if normT == -1.0:
-        pass
-    else:
-        BBflux /= np.nanmax(make_bb(BBwave, normT))
-
     #Import filter
     sb, w, s_left, s_right = filt_interp(band=band)
 
