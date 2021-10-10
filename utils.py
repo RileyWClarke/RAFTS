@@ -62,16 +62,14 @@ def filt_array(wavelens):
     Returns
     -----------
     sb : ndarray
-        filter throughput
-    w : ndarray
-        filter wavelengths
+        filter throughput over wavelens
     s_left : float
         wavelength of the left side of band
     s_right : float
         wavelength of the right side of band
     """
 
-def md_lamb_eff(band, temp, mdname, ff = 0.0, normT = -1.0):
+def md_lamb_eff(band, temp, mdname, ff = 0.0):
 
     """
     Calculates the DCR offset in arcsec for md + BB sed
@@ -89,9 +87,6 @@ def md_lamb_eff(band, temp, mdname, ff = 0.0, normT = -1.0):
 
     ff: float
         filling factor for mdwarf + (BB*ff)
-
-    normT: float
-        normalization temperature. Blackbody peak flux normalized to 1.0 at this temp
 
     Returns
     -----------
@@ -111,9 +106,6 @@ def lamb_eff_BB(band, temp):
 
     temp: float
         BB effective temperature
-
-    normT: float
-        normalization temperature. Blackbody peak flux normalized to 1.0 at this temp
 
     Returns
     -----------
