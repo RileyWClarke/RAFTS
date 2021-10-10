@@ -29,7 +29,7 @@ def make_bb(wavelengths, temp, normed = -1.0):
         flux array of blackbody
     """
 
-def filt_interp(band, x_new):
+def filt_interp(band):
 
     """
     Imports and interpolates LSST filter
@@ -39,40 +39,17 @@ def filt_interp(band, x_new):
     band: string
         which LSST band to use (u,g,r,i,z,y)
 
-    x_new: ndarray
-        the array to interpolate on
-
     Returns
     -----------
-    filt_array(wavelens) : function
-        function that evaluates the interpolated filter
-        over the specified wavelengths
+    interp1d(filtx,filty,fill_value = 0.0) : function
+        function that interpolates filtx,filty
     """
 
-def filt_array(wavelens):
-
-    """
-    Imports LSST filter
-
-    Parameters
-    -----------
-    wavelens : ndarray
-        wavelengths to generate the filter over
-
-    Returns
-    -----------
-    sb : ndarray
-        filter throughput over wavelens
-    s_left : float
-        wavelength of the left side of band
-    s_right : float
-        wavelength of the right side of band
-    """
 
 def md_lamb_eff(band, temp, mdname, ff = 0.0):
 
     """
-    Calculates the DCR offset in arcsec for md + BB sed
+    Calculates the effective wavelength in arcsec for md + BB sed
 
     Parameters
     -----------
@@ -97,7 +74,7 @@ def md_lamb_eff(band, temp, mdname, ff = 0.0):
 def lamb_eff_BB(band, temp):
 
     """
-    Calculates the DCR offset in arcsec for md + BB sed
+    Calculates the effective wavelength in arcsec for BB sed
 
     Parameters
     -----------
