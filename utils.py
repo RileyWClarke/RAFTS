@@ -88,12 +88,12 @@ def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
     Returns
     -----------
     float
-        effective wavelength
+        effective wavelength in Angstroms
     """
 
     #Create BB
     BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp)
+    BBflux = make_bb(BBwave,temp,normed=1.6e22)
 
     #Import filter
     f = filt_interp(band=band)
@@ -116,23 +116,24 @@ def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
             break
 
     #take slice where band is non-zero
-    cleft = np.where(np.abs(BBwave - s_left) == np.abs(BBwave - s_left).min())[0][0]
-    cright = np.where(np.abs(BBwave - s_right) == np.abs(BBwave - s_right).min())[0][0]
+    BBleft = np.where(np.abs(BBwave - s_left) == np.abs(BBwave - s_left).min())[0][0]
+    BBright = np.where(np.abs(BBwave - s_right) == np.abs(BBwave - s_right).min())[0][0]
 
     #Import mdwarf spectrum
-    m_spec, m_wave = mdwarf_interp(mdname, x_new=BBwave,
-                                s_left = s_left, s_right = s_right)
+    f = mdwarf_interp(fname=mdname)
+    interpolated_md = f(BBwave)
     
     #Slice BB
-    BBfluxc = BBflux[cleft:cright]
-    BBwavec = BBwave[cleft:cright]
+    BBfluxc = BBflux[BBleft:BBright]
+    BBwavec = BBwave[BBleft:BBright]
 
     if verbose:
-        print("Calculating BB $T_{eff} = {}$".format(temp))
+        print("Calculating BB at T = {} K".format(temp))
+        print(BBfluxc)
     
     #Calc effective lambda
-    w_eff = np.exp(np.sum( (m_spec + (ff * BBfluxc)) * interpolated_filt * np.log(BBwavec)) / 
-                   np.sum((m_spec + (ff * BBfluxc)) * interpolated_filt))
+    w_eff = np.exp(np.sum( (interpolated_md[BBleft:BBright] + (ff * BBfluxc) ) * interpolated_filt[BBleft:BBright] * np.log(BBwavec)) / 
+                   np.sum( (interpolated_md[BBleft:BBright] + (ff * BBfluxc) ) * interpolated_filt[BBleft:BBright]))
    
     return w_eff
 
@@ -152,12 +153,12 @@ def lamb_eff_BB(band, temp, verbose=False):
     Returns
     -----------
     float
-        effective wavelength
+        effective wavelength in Angstroms
     """
 
     #Create BB
     BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp)
+    BBflux = make_bb(BBwave,temp,normed=1.6e22)
 
     #Import filter
     f = filt_interp(band=band)
@@ -180,19 +181,19 @@ def lamb_eff_BB(band, temp, verbose=False):
             break
 
     #take slice where band is non-zero
-    cleft = np.where(np.abs(BBwave - s_left) == np.abs(BBwave - s_left).min())[0][0]
-    cright = np.where(np.abs(BBwave - s_right) == np.abs(BBwave - s_right).min())[0][0]
+    BBleft = np.where(np.abs(BBwave - s_left) == np.abs(BBwave - s_left).min())[0][0]
+    BBright = np.where(np.abs(BBwave - s_right) == np.abs(BBwave - s_right).min())[0][0]
     
     #Slice BB
-    BBfluxc = BBflux[cleft:cright]
-    BBwavec = BBwave[cleft:cright]
+    BBfluxc = BBflux[BBleft:BBright]
+    BBwavec = BBwave[BBleft:BBright]
 
     if verbose:
         print("Calculating BB $T_{eff} = {}$".format(temp))
     
     #Calc effective lambda
-    w_eff = np.exp(np.sum( BBfluxc * interpolated_filt * np.log(BBwavec)) / 
-                   np.sum(BBfluxc * interpolated_filt))
+    w_eff = np.exp(np.sum( BBfluxc * interpolated_filt[BBleft:BBright] * np.log(BBwavec)) / 
+                   np.sum( BBfluxc * interpolated_filt[BBleft:BBright]))
    
     return w_eff
 
@@ -214,3 +215,18 @@ def dcr_offset(w_eff, airmass):
     float
         DCR offset in arcsec
     """
+
+    w_effn = np.copy(w_eff) / 1e4 #Convert angstrom to micron
+
+    #Calc index of refr
+    n = (10**-6 * (64.328 + (29498.1 / (146-(1/w_effn**2))) + (255.4 / (41 - (1/w_effn**2))))) + 1
+
+    #Calc R_0
+    R_0 = (n**2 - 1) / (2 * n**2)
+
+    #Calc Z
+    Z = np.arccos(1/airmass)
+
+    R = R_0*np.tan(Z)
+
+    return np.rad2deg(R) * 3600

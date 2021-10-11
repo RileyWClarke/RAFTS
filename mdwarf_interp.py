@@ -27,7 +27,7 @@ def mdwarf_interp(fname, plotit=False):
         data = hdulist[0].data[0]
         wstart = hdulist[0].header[3]
         wstep = hdulist[0].header[5]
-        wave = np.arange(wstart,wstart + len(data)* wstep,wstep)
+        wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
 
     if plotit:
         plt.plot(wave, data)
