@@ -30,9 +30,9 @@ def mdwarf_interp(fname, plotit=False):
         wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
 
     if plotit:
-        plt.plot(wave, data)
+        plt.plot(wave, data, label='MD Spectrum')
         plt.xlabel(r'Wavelength $(\AA)$')
-        plt.ylabel('Flux')
+        plt.ylabel(r'$F_\lambda$ ($10^{-17}\;erg\;s^{-1}\;cm^{-2}\;\AA^{-1}$)')
         plt.savefig('Figures/m_spectra.png', dpi=300, bbox_inches='tight')
 
     return interp1d(wave, data, bounds_error=False, fill_value=0.0)

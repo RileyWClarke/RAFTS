@@ -6,6 +6,7 @@ import rubin_sim.photUtils.Bandpass as Bandpass
 import rubin_sim.photUtils.Sed as Sed
 
 from mdwarf_interp import *
+from config import *
 
 import astropy.constants as const
 import astropy.units as u
@@ -32,17 +33,17 @@ def make_bb(wavelengths, temp, normed = 1.0):
     h = (const.h).cgs
     c = (const.c).cgs
     k = (const.k_B).cgs
-
+    
     l = u.Quantity(wavelengths, unit=u.angstrom)
 
     T = u.Quantity(temp, unit=u.K)
 
-    F_lambda = ((2*h*c**2)/l.to(u.nm)**5) * (1/(np.exp((h*c)/(l.to(u.nm)*k*T)) - 1)) * normed
-  
-    return F_lambda.value 
+    F_lambda = (((2*h*c**2)/l**5) * (1/(np.exp((h*c)/(l*k*T)) - 1)))
+    
+    return F_lambda.value * normed
 
 
-def filt_interp(band):
+def filt_interp(band,plotit=False):
 
     """
     Imports and interpolates LSST filter
@@ -63,6 +64,9 @@ def filt_interp(band):
     lsst[band].readThroughput('baseline/total_' + band + '.dat')
 
     sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
+
+    if plotit:
+        plt.plot(w,sb)
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
@@ -93,7 +97,7 @@ def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
 
     #Create BB
     BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp,normed=1.6e22)
+    BBflux = make_bb(BBwave,temp,normed=BBnorm)
 
     #Import filter
     f = filt_interp(band=band)
@@ -158,7 +162,7 @@ def lamb_eff_BB(band, temp, verbose=False):
 
     #Create BB
     BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp,normed=1.6e22)
+    BBflux = make_bb(BBwave,temp,normed=BBnorm)
 
     #Import filter
     f = filt_interp(band=band)
@@ -230,3 +234,4 @@ def dcr_offset(w_eff, airmass):
     R = R_0*np.tan(Z)
 
     return np.rad2deg(R) * 3600
+
