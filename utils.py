@@ -1,4 +1,3 @@
-from matplotlib.pyplot import fill
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -10,6 +9,10 @@ from config import *
 
 import astropy.constants as const
 import astropy.units as u
+
+import globals
+
+globals.initialize()
 
 def make_bb(wavelengths, temp, normed = 1.0):
 
@@ -42,6 +45,43 @@ def make_bb(wavelengths, temp, normed = 1.0):
     
     return F_lambda.value * normed
 
+def compspec(temp, mdname, ff, compplot=False):
+    """
+    Creates composite blackbody + m dwarf spectrum
+
+    Parameters
+    -----------
+    temp: int
+        blackbody temperature in Kelvin
+
+    mdname: str
+        mdwarf spectrum .fits filename
+
+    ff: float
+        blackbody fill factor
+
+    Returns
+    -----------
+    ndarray:
+        composite spectrum
+    """
+
+    bb = make_bb(WAVELENGTH, temp) * globals.BBnorm
+    mdf = mdwarf_interp(mdname)
+    md = mdf(WAVELENGTH)
+
+    ff = ff / globals.FF #change to "units" of 0.05
+
+    if compplot:
+        plt.figure()
+        plt.plot(WAVELENGTH, md, label="MD Only")
+        plt.plot(WAVELENGTH, md + (bb * ff), label="Composite")
+        plt.xlabel(r'Wavelength $(\AA)$')
+        plt.ylabel(r'$F_\lambda$ (arb. units)')
+        plt.title(r'Composite Spectrum w/ {0}K BB & $ff$ = {1} * 0.05'.format(temp,ff))
+        plt.legend()
+  
+    return md + (bb * ff)
 
 def filt_interp(band,plotit=False):
 
@@ -70,7 +110,7 @@ def filt_interp(band,plotit=False):
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
-def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
+def lamb_eff_md(band, temp, ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, compplot=False):
 
     """
     Calculates the effective wavelength in arcsec for md + BB sed
@@ -95,20 +135,23 @@ def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
         effective wavelength in Angstroms
     """
 
-    #Create BB
-    BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp,normed=BBnorm)
+    #Create composite spectrum
+    wave = WAVELENGTH
+    mdbb = compspec(temp, mdname=MDSPEC, ff=ff, compplot=compplot)
 
+    if mdonly:
+        mdbb = compspec(temp, mdname=MDSPEC, ff=0.0)
+    
     #Import filter
     f = filt_interp(band=band)
-    interpolated_filt = f(BBwave)
+    interpolated_filt = f(wave)
 
     #Create left slice ind
     for i,s in enumerate(interpolated_filt):
         if s == 0:
             pass
         else:
-            s_left = BBwave[i]
+            s_left = wave[i]
             break
         
     #Create right slice ind
@@ -116,28 +159,23 @@ def lamb_eff_md(band, temp, mdname, ff = 0.0, verbose=False):
         if s == 0:
             pass
         else:
-            s_right = BBwave[i]
+            s_right = wave[i]
             break
 
     #take slice where band is non-zero
-    BBleft = np.where(np.abs(BBwave - s_left) == np.abs(BBwave - s_left).min())[0][0]
-    BBright = np.where(np.abs(BBwave - s_right) == np.abs(BBwave - s_right).min())[0][0]
-
-    #Import mdwarf spectrum
-    f = mdwarf_interp(fname=mdname)
-    interpolated_md = f(BBwave)
+    BBleft = np.where(np.abs(wave - s_left) == np.abs(wave - s_left).min())[0][0]
+    BBright = np.where(np.abs(wave - s_right) == np.abs(wave - s_right).min())[0][0]
     
-    #Slice BB
-    BBfluxc = BBflux[BBleft:BBright]
-    BBwavec = BBwave[BBleft:BBright]
+    #Slice spectrum
+    mdbb = mdbb[BBleft:BBright]
+    wave = wave[BBleft:BBright]
 
-    if verbose:
-        print("Calculating BB at T = {} K".format(temp))
-        print(BBfluxc)
-    
+    #if verbose:
+        #print("Calculating BB at T = {} K".format(temp))
+        
     #Calc effective lambda
-    w_eff = np.exp(np.sum( (interpolated_md[BBleft:BBright] + (ff * BBfluxc) ) * interpolated_filt[BBleft:BBright] * np.log(BBwavec)) / 
-                   np.sum( (interpolated_md[BBleft:BBright] + (ff * BBfluxc) ) * interpolated_filt[BBleft:BBright]))
+    w_eff = np.exp(np.sum(mdbb * interpolated_filt[BBleft:BBright] * np.log(wave)) / 
+                   np.sum(mdbb * interpolated_filt[BBleft:BBright]))
    
     return w_eff
 
@@ -161,8 +199,8 @@ def lamb_eff_BB(band, temp, verbose=False):
     """
 
     #Create BB
-    BBwave = np.arange(1,12000,1)
-    BBflux = make_bb(BBwave,temp,normed=BBnorm)
+    BBwave = WAVELENGTH
+    BBflux = make_bb(BBwave, temp) / globals.BBnorm
 
     #Import filter
     f = filt_interp(band=band)
@@ -192,8 +230,8 @@ def lamb_eff_BB(band, temp, verbose=False):
     BBfluxc = BBflux[BBleft:BBright]
     BBwavec = BBwave[BBleft:BBright]
 
-    if verbose:
-        print("Calculating BB $T_{eff} = {}$".format(temp))
+    #if verbose:
+        #print("Calculating w_eff")
     
     #Calc effective lambda
     w_eff = np.exp(np.sum( BBfluxc * interpolated_filt[BBleft:BBright] * np.log(BBwavec)) / 
@@ -235,3 +273,5 @@ def dcr_offset(w_eff, airmass):
 
     return np.rad2deg(R) * 3600
 
+def sed_integ(w, f):
+    return np.nansum(f) / np.nanmean(np.diff(w))
