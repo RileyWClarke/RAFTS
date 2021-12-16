@@ -18,7 +18,7 @@ def initialize():
     BBnorm *= MDarea
 
     global airmass
-    airmass = 1.4
+    airmass = 1.1
 
     global FF
     FF = 0.05

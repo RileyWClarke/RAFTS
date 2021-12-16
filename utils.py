@@ -10,10 +10,6 @@ from config import *
 import astropy.constants as const
 import astropy.units as u
 
-import globals
-
-globals.initialize()
-
 def make_bb(wavelengths, temp, normed = 1.0):
 
     """
@@ -44,6 +40,12 @@ def make_bb(wavelengths, temp, normed = 1.0):
     F_lambda = (((2*h*c**2)/l**5) * (1/(np.exp((h*c)/(l*k*T)) - 1)))
     
     return F_lambda.value * normed
+
+def sed_integ(w, f):
+    return np.nansum(f) / np.nanmean(np.diff(w))
+
+import globals
+globals.initialize()
 
 def compspec(temp, mdname, ff, compplot=False):
     """
@@ -273,5 +275,3 @@ def dcr_offset(w_eff, airmass):
 
     return np.rad2deg(R) * 3600
 
-def sed_integ(w, f):
-    return np.nansum(f) / np.nanmean(np.diff(w))
