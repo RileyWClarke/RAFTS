@@ -76,9 +76,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-03-01"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="17:19:30"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="36" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-03-03"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="16:08:08"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="38" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
@@ -107,9 +107,9 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>01/03/2022</TD><TD>17:19:30</TD><TD>36</TD><TD>440</TD><TD>435</TD>
+     <TD>1</TD><TD>F</TD><TD>03/03/2022</TD><TD>16:08:07</TD><TD>37</TD><TD>486</TD><TD>483</TD>
      <TD>Unnamed</TD><TD>243.966</TD>
-     <TD>1.61189</TD><TD>32.2379</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
+     <TD>1.61189</TD><TD>24.1784</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
      <TD>0</TD><TD>51499.6</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -124,7 +124,7 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SExtractor configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 000819_refimg.fits -c default.sex"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 000819_refimg.fits -c default.sex -DETECT_THRESH 15 -ANALYSIS_THRESH 15"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.sex"/>
    <PARAM name="Catalog_Type" datatype="char" arraysize="*" ucd="meta.code;meta.table" value="ASCII_HEAD"/>
    <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="out.cat"/>
@@ -133,8 +133,8 @@
    <PARAM name="Detect_MinArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.min" value="25"/>
    <PARAM name="Detect_MaxArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.max" value="0"/>
    <PARAM name="Thresh_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.sensitivity" value="RELATIVE"/>
-   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="20"/>
-   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="20"/>
+   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="15"/>
+   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="15"/>
    <PARAM name="Filter" datatype="boolean" ucd="meta.code;obs.param" value="T"/>
    <PARAM name="Filter_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.conv"/>
    <PARAM name="Filter_Thresh" datatype="double" ucd="obs.param" value=""/>

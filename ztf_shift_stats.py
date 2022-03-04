@@ -42,13 +42,13 @@ def getrefimg(paddedfield,filtercode,paddedccdid,qid):
     hdu.writeto('srcext/'+str(paddedfield)+'_refimg'+'.fits', overwrite=True)
 
 
-def srcext(file):
-
+def srcext(file, det_thresh, ana_thresh):
+    print(os.getcwd())
     os.chdir('srcext')
     print(file)
     print(os.path.isfile(file))
     print(os.getcwd())
-    os.system('sex ' + file + ' -c default.sex')
+    os.system('sex ' + file + ' -c default.sex' + ' -DETECT_THRESH ' + str(det_thresh) + ' -ANALYSIS_THRESH ' + str(ana_thresh))
 
     cata_df = pd.read_table('out.cat', names=['NUMBER',
     'X_IMAGE',
