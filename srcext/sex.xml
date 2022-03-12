@@ -76,9 +76,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-03-03"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="16:08:08"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="38" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-03-11"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="14:45:00"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="26" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
@@ -107,7 +107,7 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>03/03/2022</TD><TD>16:08:07</TD><TD>37</TD><TD>486</TD><TD>483</TD>
+     <TD>1</TD><TD>F</TD><TD>11/03/2022</TD><TD>14:44:59</TD><TD>25</TD><TD>486</TD><TD>483</TD>
      <TD>Unnamed</TD><TD>243.966</TD>
      <TD>1.61189</TD><TD>24.1784</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
      <TD>0</TD><TD>51499.6</TD>
