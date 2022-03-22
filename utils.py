@@ -76,8 +76,8 @@ def compspec(temp, mdname, ff, compplot=False):
 
     if compplot:
         plt.figure()
-        plt.plot(WAVELENGTH, md, label="MD Only")
-        plt.plot(WAVELENGTH, md + (bb * ff), label="Composite")
+        plt.plot(WAVELENGTH, md, label="dM5e Template Only")
+        plt.plot(WAVELENGTH, md + (bb * ff), label="Composite Spectrum")
         plt.xlabel(r'Wavelength $(\AA)$')
         plt.ylabel(r'$F_\lambda$ (arb. units)')
         plt.title(r'Composite Spectrum w/ {0}K BB & $ff$ = {1} * 0.05'.format(temp,ff))

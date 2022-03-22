@@ -58,6 +58,7 @@ good_sep = seps < 1
 proj = seps[good_sep] * np.cos(theta_1[good_sep] - theta_2[good_sep])
 
 am  = sci_header[97]
+print(sci_header)
 
 ##Find flare star
 
