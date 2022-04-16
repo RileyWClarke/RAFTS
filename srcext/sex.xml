@@ -3,11 +3,11 @@
 <VOTABLE version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
 <DESCRIPTION>produced by SExtractor</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SExtractor" name="000819_refimg.fits">
+<RESOURCE ID="SExtractor" name="20200206302627_000819_sciimg.fits">
  <DESCRIPTION>Catalog of sources extracted with SExtractor</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
- <TABLE ID="Source_List" name="000819_refimg.fits/out">
+ <TABLE ID="Source_List" name="20200206302627_000819_sciimg.fits/out">
   <DESCRIPTION>Table of sources detected in image</DESCRIPTION>
   <!-- Now comes the definition of each SExtractor parameter -->
   <FIELD name="NUMBER" ucd="meta.record" datatype="int" unit="">
@@ -76,13 +76,13 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-03-18"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="14:36:04"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="21" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-04-15"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="21:26:35"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="8" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
-  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="000819_refimg.fits"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="20200206302627_000819_sciimg.fits"/>
   <TABLE ID="Extension_Data" name="Extension_Data">
    <DESCRIPTION>Data gathered by SExtractor for every FITS extension</DESCRIPTION>
    <!-- NExtensions may be 0 if an error occurred early in the processing -->
@@ -107,10 +107,10 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>18/03/2022</TD><TD>14:36:04</TD><TD>21</TD><TD>486</TD><TD>483</TD>
-     <TD>Unnamed</TD><TD>243.966</TD>
-     <TD>1.61189</TD><TD>24.1784</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
-     <TD>0</TD><TD>51499.6</TD>
+     <TD>1</TD><TD>F</TD><TD>15/04/2022</TD><TD>21:26:34</TD><TD>8</TD><TD>161</TD><TD>161</TD>
+     <TD>Unnamed</TD><TD>860.852</TD>
+     <TD>13.4145</TD><TD>201.218</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
+     <TD>5.8</TD><TD>56523.1</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -124,7 +124,7 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SExtractor configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 000819_refimg.fits -c default.sex -DETECT_THRESH 15 -ANALYSIS_THRESH 15"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200206302627_000819_sciimg.fits -c default.sex -DETECT_THRESH 15 -ANALYSIS_THRESH 15"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.sex"/>
    <PARAM name="Catalog_Type" datatype="char" arraysize="*" ucd="meta.code;meta.table" value="ASCII_HEAD"/>
    <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="out.cat"/>
