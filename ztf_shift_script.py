@@ -2,7 +2,7 @@ import importlib
 import os
 import sys
 import numpy as np
-from Utils.ztf_shift_utils import *
+from ztf_shift_utils import *
 
 scistring = sys.argv[1]
 refstring = sys.argv[2]
