@@ -48,15 +48,19 @@ def getrefimg(paddedfield,filtercode,paddedccdid,qid):
     hdu.writeto('srcext/'+str(paddedfield)+'_refimg'+'.fits', overwrite=True)
 
 
-def srcext(file, det_thresh, ana_thresh):
-    print(os.getcwd())
+def srcext(file, det_thresh, ana_thresh, catname):
+    #print(os.getcwd())
     os.chdir('srcext')
-    print(file)
+    print('Making SExtractor catalog of '+file+'...')
     #print(os.path.isfile(file))
-    print(os.getcwd())
-    os.system('sex ' + file + ' -c default.sex' + ' -DETECT_THRESH ' + str(det_thresh) + ' -ANALYSIS_THRESH ' + str(ana_thresh))
+    #print(os.getcwd())
 
-    cata_df = pd.read_table('out.cat', names=['NUMBER',
+    if os.path.isfile(catname) == True:
+        print('This catalogue already exists, moving on...')
+    else:
+        os.system('sex ' + file + ' -c default.sex' + ' -DETECT_THRESH ' + str(det_thresh) + ' -ANALYSIS_THRESH ' + str(ana_thresh) + ' -CATALOG_NAME ' + str(catname))
+
+    cata_df = pd.read_table(catname, names=['NUMBER',
     'X_IMAGE',
     'Y_IMAGE',
     'XWIN_IMAGE',
@@ -81,6 +85,7 @@ def srcext(file, det_thresh, ana_thresh):
 
 def xmatch(cat1, cat2):
 
+    print("Matching catalogs...")
     c1 = SkyCoord(ra=cat1["ALPHA_SKY"]*u.degree, dec=cat1["DELTA_SKY"]*u.degree)
     c2 = SkyCoord(ra=cat2["ALPHA_SKY"]*u.degree, dec=cat2["DELTA_SKY"]*u.degree)
     idx, d2d, d3d = c1.match_to_catalog_sky(c2)

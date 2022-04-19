@@ -76,9 +76,9 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-04-15"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="21:26:35"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="8" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-04-19"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="18:47:00"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="9" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
@@ -107,9 +107,9 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>15/04/2022</TD><TD>21:26:34</TD><TD>8</TD><TD>161</TD><TD>161</TD>
+     <TD>1</TD><TD>F</TD><TD>19/04/2022</TD><TD>18:46:59</TD><TD>8</TD><TD>204</TD><TD>204</TD>
      <TD>Unnamed</TD><TD>860.852</TD>
-     <TD>13.4145</TD><TD>201.218</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
+     <TD>13.4145</TD><TD>134.145</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
      <TD>5.8</TD><TD>56523.1</TD>
     </TR>
    </TABLEDATA></DATA>
@@ -124,17 +124,17 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SExtractor configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200206302627_000819_sciimg.fits -c default.sex -DETECT_THRESH 15 -ANALYSIS_THRESH 15"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200206302627_000819_sciimg.fits -c default.sex -DETECT_THRESH 10 -ANALYSIS_THRESH 10 -CATALOG_NAME 20200206302627_000819.cat"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.sex"/>
    <PARAM name="Catalog_Type" datatype="char" arraysize="*" ucd="meta.code;meta.table" value="ASCII_HEAD"/>
-   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="out.cat"/>
+   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="20200206302627_000819.cat"/>
    <PARAM name="Parameters_Name" datatype="char" arraysize="*" ucd="meta;obs.param" value="default.param"/>
    <PARAM name="Detect_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.det" value="CCD"/>
    <PARAM name="Detect_MinArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.min" value="25"/>
    <PARAM name="Detect_MaxArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.max" value="0"/>
    <PARAM name="Thresh_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.sensitivity" value="RELATIVE"/>
-   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="15"/>
-   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="15"/>
+   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="10"/>
+   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="10"/>
    <PARAM name="Filter" datatype="boolean" ucd="meta.code;obs.param" value="T"/>
    <PARAM name="Filter_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.conv"/>
    <PARAM name="Filter_Thresh" datatype="double" ucd="obs.param" value=""/>
