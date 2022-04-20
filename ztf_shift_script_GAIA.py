@@ -3,7 +3,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from ztf_shift_utils import *
+from utils import *
 
 scistring = sys.argv[1]
 refstring = sys.argv[2]

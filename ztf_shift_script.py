@@ -1,8 +1,6 @@
-import importlib
-import os
 import sys
 import numpy as np
-from ztf_shift_utils import *
+from utils import *
 
 scistring = sys.argv[1]
 refstring = sys.argv[2]
