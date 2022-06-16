@@ -3,11 +3,11 @@
 <VOTABLE version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
 <DESCRIPTION>produced by SExtractor</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SExtractor" name="20200206302627_000819_sciimg.fits">
+<RESOURCE ID="SExtractor" name="20200205456227_000819_sciimg.fits">
  <DESCRIPTION>Catalog of sources extracted with SExtractor</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
- <TABLE ID="Source_List" name="20200206302627_000819_sciimg.fits/out">
+ <TABLE ID="Source_List" name="20200205456227_000819_sciimg.fits/out">
   <DESCRIPTION>Table of sources detected in image</DESCRIPTION>
   <!-- Now comes the definition of each SExtractor parameter -->
   <FIELD name="NUMBER" ucd="meta.record" datatype="int" unit="">
@@ -76,13 +76,13 @@
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-04-19"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="18:47:00"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="9" unit="s"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-05-10"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="12:05:01"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="18" unit="s"/>
   <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
   <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
-  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="20200206302627_000819_sciimg.fits"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="20200205456227_000819_sciimg.fits"/>
   <TABLE ID="Extension_Data" name="Extension_Data">
    <DESCRIPTION>Data gathered by SExtractor for every FITS extension</DESCRIPTION>
    <!-- NExtensions may be 0 if an error occurred early in the processing -->
@@ -107,10 +107,10 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>19/04/2022</TD><TD>18:46:59</TD><TD>8</TD><TD>204</TD><TD>204</TD>
-     <TD>Unnamed</TD><TD>860.852</TD>
-     <TD>13.4145</TD><TD>134.145</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
-     <TD>5.8</TD><TD>56523.1</TD>
+     <TD>1</TD><TD>F</TD><TD>10/05/2022</TD><TD>12:05:01</TD><TD>17</TD><TD>380</TD><TD>377</TD>
+     <TD>Unnamed</TD><TD>238.715</TD>
+     <TD>7.50888</TD><TD>37.5444</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
+     <TD>5.8</TD><TD>57078.5</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -124,17 +124,17 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SExtractor configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200206302627_000819_sciimg.fits -c default.sex -DETECT_THRESH 10 -ANALYSIS_THRESH 10 -CATALOG_NAME 20200206302627_000819.cat"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200205456227_000819_sciimg.fits -c default.sex -DETECT_THRESH 5 -ANALYSIS_THRESH 5 -CATALOG_NAME 20200205456227_000819.cat"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.sex"/>
    <PARAM name="Catalog_Type" datatype="char" arraysize="*" ucd="meta.code;meta.table" value="ASCII_HEAD"/>
-   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="20200206302627_000819.cat"/>
+   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="20200205456227_000819.cat"/>
    <PARAM name="Parameters_Name" datatype="char" arraysize="*" ucd="meta;obs.param" value="default.param"/>
    <PARAM name="Detect_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.det" value="CCD"/>
    <PARAM name="Detect_MinArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.min" value="25"/>
    <PARAM name="Detect_MaxArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.max" value="0"/>
    <PARAM name="Thresh_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.sensitivity" value="RELATIVE"/>
-   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="10"/>
-   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="10"/>
+   <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="5"/>
+   <PARAM name="Analysis_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="5"/>
    <PARAM name="Filter" datatype="boolean" ucd="meta.code;obs.param" value="T"/>
    <PARAM name="Filter_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.conv"/>
    <PARAM name="Filter_Thresh" datatype="double" ucd="obs.param" value=""/>

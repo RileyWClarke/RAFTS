@@ -359,7 +359,12 @@ def xmatch(cat1, cat2):
     print("Matching catalogs...")
     c1 = SkyCoord(ra=cat1["ALPHA_SKY"]*u.degree, dec=cat1["DELTA_SKY"]*u.degree)
     c2 = SkyCoord(ra=cat2["ALPHA_SKY"]*u.degree, dec=cat2["DELTA_SKY"]*u.degree)
-    idx, d2d, d3d = c1.match_to_catalog_sky(c2)
+
+    if len(c1) < len(c2):
+        idx, d2d, d3d = c1.match_to_catalog_sky(c2)
+    
+    else:
+        idx, d2d, d3d = c2.match_to_catalog_sky(c1)
 
     return idx, d2d, d3d
 
