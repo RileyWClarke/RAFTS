@@ -503,4 +503,3 @@ def plot_shifts_gaia(ref_ra, ref_dec, sci_ra, sci_dec, zen_ra, zen_dec, flr_ind,
     ax.grid(False)
     
     plt.gca().set_aspect('equal')
-   
