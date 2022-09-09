@@ -5,10 +5,10 @@ import os
 
 import astropy.units as u
 from astropy.time import Time
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, ICRS
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, ICRS, FK5
 from astropy.io import fits
 
-from astroquery.gaia import Gaia
+#from astroquery.gaia import Gaia
 
 from scipy.interpolate import interp1d
 
@@ -306,7 +306,7 @@ def getrefimg(paddedfield,filtercode,paddedccdid,qid):
     print("Querying: "+url)
     hdu = fits.open(url)
     hdu.writeto('srcext/'+str(paddedfield)+'_refimg'+'.fits', overwrite=True)
-
+'''
 def getgaiacat(sra,sdec,srad,verb=2):
     
     Gaia.ROW_LIMIT = 200 
@@ -318,7 +318,7 @@ def getgaiacat(sra,sdec,srad,verb=2):
     gaia_df = pd.DataFrame({'ra':r['ra'], 'dec':r['dec'], 'gmag':r['phot_g_mean_mag'], 'rmag':r['phot_rp_mean_mag']})
 
     return gaia_df
-
+'''
 def srcext(file, det_thresh, ana_thresh, catname):
     #print(os.getcwd())
     os.chdir('srcext')
@@ -503,3 +503,88 @@ def plot_shifts_gaia(ref_ra, ref_dec, sci_ra, sci_dec, zen_ra, zen_dec, flr_ind,
     ax.grid(False)
     
     plt.gca().set_aspect('equal')
+
+def pa(h, phi, d):
+
+    '''
+    PA equation from Astronomical Algorithms
+
+    Parameters
+    -------------
+    h: float
+        hour angle in hours
+    phi: float
+        Geographic latitude of observatory in degrees
+    d: float
+        Declination in degrees
+
+    Returns
+    -------------
+    float
+        Parallactic angle in degrees
+    '''
+
+    deg2rad = np.pi / 180
+    ha2deg =  15.04107
+
+    q = np.arctan2(np.sin(h * ha2deg * deg2rad), np.cos(d * deg2rad) * np.tan(phi * deg2rad) - np.sin(d * deg2rad) * np.cos(h * ha2deg * deg2rad))
+
+    return q / deg2rad
+
+def celest_to_pa(ra, dec, time, loc):
+
+    '''
+    Convert celestial coordinates to a parallactic angle given
+    a observation time and observatory location
+
+    Parameters
+    -------------
+    ra: float
+        Right Ascension in degrees
+    dec: float
+        Declination in degrees
+    time: float
+        Observation time in MJD
+    location: astropy.coordinates.EarthLocation object
+        EarthLocation object of observing site
+
+    Returns
+    -------------
+    astropy.Quantity object
+        Parallactic angle quantity
+    '''
+    
+    ha2deg =  15.04107
+
+    t = Time(time, format='mjd', location=loc)
+    lat = loc.lat.deg
+    lst = t.sidereal_time('mean')
+    print('LST = {}'.format(lst))
+    ha = lst.hour - (ra / ha2deg)
+    
+    return pa(ha, lat, dec)
+
+def pa_plot(ras, decs, time, loc):
+
+    ax = plt.axes()
+    for ra, dec in zip(ras, decs):
+
+        pa = celest_to_pa(ra, dec, time, loc)
+        
+        altaz = SkyCoord(ra = ra * u.degree, dec = dec*u.degree).transform_to(AltAz(obstime = time, location=loc))
+        zd = 90 - altaz.alt.value
+        am = 1 / np.cos(np.deg2rad(zd))
+
+        ax.spines['left'].set_position('center')
+        ax.spines['bottom'].set_position('center')
+        ax.spines['right'].set_color('none')
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+
+        ax.scatter(ra, dec, marker='*', s=100)
+        ax.arrow(x = ra, y = dec, dx = am * np.cos(pa), dy = am * np.sin(pa), width=0.1)
+        ax.set_xlim(-10,10)
+        ax.set_ylim(-10,10)
+        ax.set_xlabel('RA (deg)', labelpad=140)
+        ax.set_ylabel('Dec (deg)', labelpad=160)        
