@@ -8,6 +8,9 @@ AMS = np.linspace(1.05,1.2,num=6,dtype='float')
 
 Palomar = EarthLocation.of_site('Palomar')
 
+deg2rad = np.pi / 180
+ha2deg =  15.04107
+
 def get_img_string(key):
     codes={'flare1ep1':'20200206287824000819zg13o2',
            'flare1ep3':'20200206302627000819zg13o2',

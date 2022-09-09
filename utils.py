@@ -524,9 +524,6 @@ def pa(h, phi, d):
         Parallactic angle in degrees
     '''
 
-    deg2rad = np.pi / 180
-    ha2deg =  15.04107
-
     q = np.arctan2(np.sin(h * ha2deg * deg2rad), np.cos(d * deg2rad) * np.tan(phi * deg2rad) - np.sin(d * deg2rad) * np.cos(h * ha2deg * deg2rad))
 
     return q / deg2rad
@@ -553,8 +550,6 @@ def celest_to_pa(ra, dec, time, loc):
     astropy.Quantity object
         Parallactic angle quantity
     '''
-    
-    ha2deg =  15.04107
 
     t = Time(time, format='mjd', location=loc)
     lat = loc.lat.deg
