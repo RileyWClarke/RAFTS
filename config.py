@@ -1,9 +1,12 @@
 import numpy as np
+from astropy.coordinates import EarthLocation
 WAVELENGTH = np.arange(0,12001,1)
 WMIN = 3825
 WMAX = 9200
 MDSPEC = 'm5.active.ha.na.k.fits'
 AMS = np.linspace(1.05,1.2,num=6,dtype='float')
+
+Palomar = EarthLocation.of_site('Palomar')
 
 def get_img_string(key):
     codes={'flare1ep1':'20200206287824000819zg13o2',
