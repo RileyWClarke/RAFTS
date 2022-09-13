@@ -554,7 +554,6 @@ def celest_to_pa(ra, dec, time, loc):
     t = Time(time, format='mjd', location=loc)
     lat = loc.lat.deg
     lst = t.sidereal_time('mean')
-    print('LST = {}'.format(lst))
     ha = lst.hour - (ra / ha2deg)
     
     return pa(ha, lat, dec)
