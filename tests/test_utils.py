@@ -55,7 +55,7 @@ def test_celest_to_pa_SP(test, expected):
 
 def test_celest_to_pa_keck(test, expected):
 
-    npt.assert_almost_equal(celest_to_pa(*test), expected, decimal=2)
+    npt.assert_almost_equal(celest_to_pa(*test, verbose=True), expected, decimal=2)
 
 @pytest.mark.parametrize(
     "test, expected",
@@ -71,4 +71,4 @@ def test_celest_to_pa_keck(test, expected):
 
 def test_celest_to_pa_palomar(test, expected):
 
-    npt.assert_almost_equal(celest_to_pa(*test), expected, decimal=2)
+    npt.assert_almost_equal(celest_to_pa(*test, verbose=True), expected, decimal=2)

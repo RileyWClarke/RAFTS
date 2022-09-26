@@ -530,7 +530,7 @@ def pa(h, phi, d):
 
     return q / deg2rad
 
-def celest_to_pa(ra, dec, time, loc):
+def celest_to_pa(ra, dec, time, loc, verbose = False):
 
     '''
     Convert celestial coordinates to a parallactic angle given
@@ -558,11 +558,12 @@ def celest_to_pa(ra, dec, time, loc):
     scoord = SkyCoord(ra=ra * u.deg, dec = dec * u.deg)
     lst = t.sidereal_time('mean', 'greenwich')
     ha = lst.hour - (ra / ha2deg)
-    print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
-    print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
-    print('time = {}'.format(t))
-    print('LMST = {}'.format(lst.hms))
-    print('ha = {}'.format(ha))
+    if verbose:
+        print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
+        print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
+        print('time = {}'.format(t))
+        print('LMST = {}'.format(lst.hms))
+        print('ha = {}'.format(ha))
     return pa(ha, lat, dec)
 
 def pa_plot(ras, decs, time, loc):
