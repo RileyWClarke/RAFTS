@@ -8,8 +8,6 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, ICRS, FK5
 from astropy.io import fits
 
-#from astroquery.gaia import Gaia
-
 from scipy.interpolate import interp1d
 
 import rubin_sim.photUtils.Bandpass as Bandpass
@@ -20,6 +18,10 @@ from config import *
 
 import astropy.constants as const
 import astropy.units as u
+
+import warnings
+#suppress warnings
+warnings.filterwarnings('ignore')
 
 def make_bb(wavelengths, temp, normed = 1.0):
 
@@ -551,11 +553,16 @@ def celest_to_pa(ra, dec, time, loc):
         Parallactic angle quantity
     '''
 
-    t = Time(time, format='mjd', location=loc)
+    t = Time(time, location=loc)
     lat = loc.lat.deg
-    lst = t.sidereal_time('mean')
+    scoord = SkyCoord(ra=ra * u.deg, dec = dec * u.deg)
+    lst = t.sidereal_time('mean', 'greenwich')
     ha = lst.hour - (ra / ha2deg)
-    
+    print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
+    print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
+    print('time = {}'.format(t))
+    print('LMST = {}'.format(lst.hms))
+    print('ha = {}'.format(ha))
     return pa(ha, lat, dec)
 
 def pa_plot(ras, decs, time, loc):
