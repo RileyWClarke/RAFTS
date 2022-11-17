@@ -6,10 +6,8 @@ WMAX = 9200
 MDSPEC = 'm5.active.ha.na.k.fits'
 AMS = np.linspace(1.05,1.2,num=6,dtype='float')
 
-Palomar = EarthLocation.of_site('Palomar')
-
 deg2rad = np.pi / 180
-ha2deg =  15.04107
+ha2deg = 15.0
 
 def get_img_string(key):
     codes={'flare1ep1':'20200206287824000819zg13o2',
