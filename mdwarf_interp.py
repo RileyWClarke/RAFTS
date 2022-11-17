@@ -4,6 +4,8 @@ import numpy as np
 from astropy.io import fits
 from scipy.interpolate.interpolate import interp1d
 
+import os
+
 def mdwarf_interp(fname, plotit=False):
 
     """
