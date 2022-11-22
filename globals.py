@@ -4,8 +4,6 @@ from utils import sed_integ
 from mdwarf_interp import *
 
 def initialize():
-    import sys
-    sys.path.append('/Users/Riley/Desktop/Flarubin')
     
     global bb10k
     bb10k = make_bb(WAVELENGTH, 10000)
