@@ -23,9 +23,6 @@ import warnings
 #suppress warnings
 warnings.filterwarnings('ignore')
 
-import sys
-sys.path.append('/Users/Riley/Desktop/Flarubin')
-
 def make_bb(wavelengths, temp, normed = 1.0):
 
     """
@@ -561,7 +558,7 @@ def celest_to_pa(ra, dec, time, loc, verbose = False):
     lon = loc.lon.deg
     scoord = SkyCoord(ra=ra * u.deg, dec = dec * u.deg)
     lst = t.sidereal_time('mean', longitude=lon)
-    ha = lst.hour - (ra / ha2deg)
+    ha = lst.hour - scoord.ra.hour
     if verbose:
         print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
         print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
