@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 import pytest
 
 from utils import celest_to_pa
-
 from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation
 import astropy.units as u
@@ -23,21 +22,9 @@ procyon = SkyCoord.from_name('Procyon')
     [
         ([0.0, 0.0, vernal_eq, EarthLocation(lon=0.0, lat=90.0, height=0.0)], 0.0),
         ([0.0, 45.0, vernal_eq, EarthLocation(lon=0.0, lat=90.0, height=0.0)], 0.0),
-        ([45.0, 45.0, vernal_eq, EarthLocation(lon=0.0, lat=90.0, height=0.0)], 0.0)
+        ([0.0, 90.0, vernal_eq, EarthLocation(lon=0.0, lat=90.0, height=0.0)], 0.0)
     ])
 def test_celest_to_pa_NP(test, expected):
-
-    npt.assert_approx_equal(celest_to_pa(*test), expected, significant=2)
-
-
-@pytest.mark.parametrize(
-    "test, expected",
-    [
-        ([0.0, 0.0, vernal_eq, EarthLocation(lon=0.0, lat=-90.0, height=0.0)], 180.0),
-        ([0.0, 45.0, vernal_eq, EarthLocation(lon=0.0, lat=-90.0, height=0.0)], 180.0),
-        ([45.0, 45.0, vernal_eq, EarthLocation(lon=0.0, lat=-90.0, height=0.0)], 180.0)
-    ])
-def test_celest_to_pa_SP(test, expected):
 
     npt.assert_approx_equal(celest_to_pa(*test), expected, significant=2)
 
