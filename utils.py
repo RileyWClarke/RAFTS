@@ -526,11 +526,13 @@ def pa(h, phi, d):
         Parallactic angle in degrees
     '''
 
-    q = np.arctan2(np.sin(h * ha2deg * deg2rad), np.cos(d * deg2rad) * np.tan(phi * deg2rad) - np.sin(d * deg2rad) * np.cos(h * ha2deg * deg2rad))
+    q = np.arctan2(np.sin(h * ha2deg * deg2rad), \
+        np.cos(d * deg2rad) * np.tan(phi * deg2rad) - \
+        np.sin(d * deg2rad) * np.cos(h * ha2deg * deg2rad))
 
     return q / deg2rad
 
-def celest_to_pa(ra, dec, time, loc, verbose = False):
+def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
 
     '''
     Convert celestial coordinates to a parallactic angle given
@@ -558,7 +560,12 @@ def celest_to_pa(ra, dec, time, loc, verbose = False):
     lon = loc.lon.deg
     scoord = SkyCoord(ra=ra * u.deg, dec = dec * u.deg)
     lst = t.sidereal_time('mean', longitude=lon)
+
+    if round_lmst:
+        lst = (lst * 60).round() / 60
+
     ha = lst.hour - scoord.ra.hour
+
     if verbose:
         print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
         print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
