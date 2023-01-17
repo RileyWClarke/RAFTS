@@ -545,7 +545,7 @@ def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
     dec: float
         Declination in degrees
     time: float
-        Observation time in MJD
+        astropy.time.Time object
     location: astropy.coordinates.EarthLocation object
         EarthLocation object of observing site
 
@@ -572,29 +572,4 @@ def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
         print('time = {}'.format(t))
         print('LMST = {}'.format(lst.hms))
         print('ha = {}'.format(ha))
-    return pa(ha, lat, dec)
-
-def pa_plot(ras, decs, time, loc):
-
-    ax = plt.axes()
-    for ra, dec in zip(ras, decs):
-
-        pa = celest_to_pa(ra, dec, time, loc)
-        
-        altaz = SkyCoord(ra = ra * u.degree, dec = dec*u.degree).transform_to(AltAz(obstime = time, location=loc))
-        zd = 90 - altaz.alt.value
-        am = 1 / np.cos(np.deg2rad(zd))
-
-        ax.spines['left'].set_position('center')
-        ax.spines['bottom'].set_position('center')
-        ax.spines['right'].set_color('none')
-        ax.spines['top'].set_color('none')
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')
-
-        ax.scatter(ra, dec, marker='*', s=100)
-        ax.arrow(x = ra, y = dec, dx = am * np.cos(pa), dy = am * np.sin(pa), width=0.1)
-        ax.set_xlim(-10,10)
-        ax.set_ylim(-10,10)
-        ax.set_xlabel('RA (deg)', labelpad=140)
-        ax.set_ylabel('Dec (deg)', labelpad=160)        
+    return pa(ha, lat, dec)   
