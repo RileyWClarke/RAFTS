@@ -572,4 +572,46 @@ def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
         print('time = {}'.format(t))
         print('LMST = {}'.format(lst.hms))
         print('ha = {}'.format(ha))
-    return pa(ha, lat, dec)   
+    return pa(ha, lat, dec) 
+
+def celest_to_ha(ra, dec, time, loc, round_lmst = False, verbose = False):
+
+    '''
+    Convert celestial coordinates to a parallactic angle given
+    a observation time and observatory location
+
+    Parameters
+    -------------
+    ra: float
+        Right Ascension in degrees
+    dec: float
+        Declination in degrees
+    time: float
+        astropy.time.Time object
+    location: astropy.coordinates.EarthLocation object
+        EarthLocation object of observing site
+
+    Returns
+    -------------
+    astropy.Quantity object
+        Parallactic angle quantity
+    '''
+
+    t = time
+    lat = loc.lat.deg
+    lon = loc.lon.deg
+    scoord = SkyCoord(ra=ra * u.deg, dec = dec * u.deg)
+    lst = t.sidereal_time('mean', longitude=lon)
+
+    if round_lmst:
+        lst = (lst * 60).round() / 60
+
+    ha = lst.hour - scoord.ra.hour
+
+    if verbose:
+        print('Location = Lon:{0:.3f}, Lat:{1:.3f}'.format(loc.lon, loc.lat))
+        print('RA = {0}, Dec = {1}'.format(scoord.ra.hms, scoord.dec.dms))
+        print('time = {}'.format(t))
+        print('LMST = {}'.format(lst.hms))
+        print('ha = {}'.format(ha))
+    return ha
