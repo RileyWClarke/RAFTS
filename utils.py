@@ -615,3 +615,13 @@ def celest_to_ha(ra, dec, time, loc, round_lmst = False, verbose = False):
         print('LMST = {}'.format(lst.hms))
         print('ha = {}'.format(ha))
     return ha
+
+def gcd(lat1, lat2, lon1, lon2, haversine=False):
+    dlat = np.abs(lat2 - lat1)
+    dlon = np.abs(lon2 - lon1)
+    dsig = np.arccos(np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(dlon))
+    
+    if haversine:
+        dsig = 2 * np.arcsin(np.sqrt(np.sin(dlat / 2))**2 + (1 - np.sin(dlat/2)**2 - np.sin((lat1 + lat2) / 2)**2) * np.sin(dlon / 2)**2)
+        
+    return dsig
