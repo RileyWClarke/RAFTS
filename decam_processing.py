@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 
@@ -7,7 +9,8 @@ from astropy.time import Time
 
 from utils import *
 
-dcdf = pd.read_table('candidate_objects.dat', names=['field',
+#Read in candidate_objects.dat, exposures.dat
+dcdf = pd.read_table(sys.argv[1], names=['field',
 'candidate id',
 'object id',
 'object ra', 
@@ -22,7 +25,7 @@ dcdf = pd.read_table('candidate_objects.dat', names=['field',
 #Assert all object IDs are unique
 assert dcdf.shape[0] == dcdf['object id'].unique().shape[0]
 
-expdf = pd.read_table('exposures.dat', names=[
+expdf = pd.read_table(sys.argv[2], names=[
 'field',
 'exposure calendar date',
 'filename base', 
@@ -40,6 +43,15 @@ expdf = pd.read_table('exposures.dat', names=[
 #Merge dataframes
 dcdfnew = pd.merge(dcdf, expdf, on=['exposure id'], how='left')
 
+#Add datetime column
+obj_dt = []
+
+for i,time in enumerate(dcdfnew['object MJD'].values):
+    t = Time(time, format='mjd')
+    obj_dt.append(t.datetime)
+
+dcdfnew['object datetime'] = obj_dt
+
 #Add parallactic angles
 pa_arr = np.zeros_like(dcdfnew['object id'], dtype=float)
 
@@ -53,5 +65,5 @@ for i,id in enumerate(dcdfnew['object id'].unique()):
 
 dcdfnew['parallactic angle'] = pa_arr
 
-#Write to csv
+#Write file
 dcdfnew.to_csv('{}/ddf_flares.csv'.format(os.path.abspath(os.getcwd())))
