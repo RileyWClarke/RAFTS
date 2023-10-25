@@ -1,5 +1,5 @@
 import numpy as np
-from astropy.coordinates import EarthLocation
+
 WAVELENGTH = np.arange(0,12001,1)
 WMIN = 3825
 WMAX = 9200
