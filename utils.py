@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz, ICRS, FK5
 from astropy.io import fits
 
+import scipy
 from scipy.interpolate import interp1d
 
 import rubin_sim.photUtils.Bandpass as Bandpass
@@ -60,7 +62,26 @@ def sed_integ(w, f):
 import globals
 globals.initialize()
 
-def compspec(temp, mdname, ff, compplot=False):
+def fitbb_to_m5(a, T, m5spec):
+    bb = make_bb(WAVELENGTH, 3000) * 1e27 * a
+    relevant_w = np.argmin(np.abs(WAVELENGTH - WMAX))
+    indices = range(relevant_w-50, relevant_w)
+    x = np.abs(((bb[indices] - m5spec[indices])).sum())
+    return x
+
+def gen_mdspec(mdname, filename, extended=True):
+
+    mdf = mdwarf_interp(mdname)
+    md = mdf(WAVELENGTH)
+
+    if extended:
+        amplitude = 1
+        res = scipy.optimize.minimize(fitbb_to_m5, [amplitude], args=(3000, md))
+        md[WAVELENGTH >= WMAX] = (make_bb(WAVELENGTH, 3000) * 1e27 * res.x)[WAVELENGTH >= WMAX]
+
+    np.save(filename, md)
+
+def compspec(temp, md, ff, compplot=False):
     """
     Creates composite blackbody + m dwarf spectrum
 
@@ -82,8 +103,6 @@ def compspec(temp, mdname, ff, compplot=False):
     """
 
     bb = make_bb(WAVELENGTH, temp) * globals.BBnorm
-    mdf = mdwarf_interp(mdname)
-    md = mdf(WAVELENGTH)
 
     ff = ff / globals.FF #change to "units" of 0.05
 
@@ -125,7 +144,7 @@ def filt_interp(band,plotit=False):
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
-def lamb_eff_md(band, temp, ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, compplot=False):
+def lamb_eff_md(band, temp, mdpath = 'mdspec.npy', ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, compplot=False):
 
     """
     Calculates the effective wavelength in arcsec for md + BB sed
@@ -152,10 +171,11 @@ def lamb_eff_md(band, temp, ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, 
 
     #Create composite spectrum
     wave = WAVELENGTH
-    mdbb = compspec(temp, mdname=MDSPEC, ff=ff, compplot=compplot)
+    mdspec = np.load(mdpath)
+    mdbb = compspec(temp, md=mdspec, ff=ff, compplot=compplot)
 
     if mdonly:
-        mdbb = compspec(temp, mdname=MDSPEC, ff=0.0)
+        mdbb = compspec(temp, md=mdspec, ff=0.0)
     
     #Import filter
     f = filt_interp(band=band)
@@ -197,7 +217,7 @@ def lamb_eff_md(band, temp, ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, 
 def lamb_eff_BB(band, temp, verbose=False):
 
     """
-    Calculates the effective wavelength in arcsec for BB sed
+    Calculates the effective wavelength in angstroms for BB sed
 
     Parameters
     -----------
@@ -254,6 +274,16 @@ def lamb_eff_BB(band, temp, verbose=False):
    
     return w_eff
 
+def R0(w_eff):
+    #Docstring
+    w_effn = np.copy(w_eff) / 1e4 #Convert angstrom to micron
+
+    #Calc index of refr
+    n = (10**-6 * (64.328 + (29498.1 / (146-(1/w_effn**2))) + (255.4 / (41 - (1/w_effn**2))))) + 1
+
+    #Calc R_0
+    return (n**2 - 1) / (2 * n**2)
+
 def dcr_offset(w_eff, airmass):
 
     """
@@ -273,20 +303,84 @@ def dcr_offset(w_eff, airmass):
         DCR offset in arcsec
     """
 
-    w_effn = np.copy(w_eff) / 1e4 #Convert angstrom to micron
+    #w_effn = np.copy(w_eff) / 1e4 #Convert angstrom to micron
 
     #Calc index of refr
-    n = (10**-6 * (64.328 + (29498.1 / (146-(1/w_effn**2))) + (255.4 / (41 - (1/w_effn**2))))) + 1
+    #n = (10**-6 * (64.328 + (29498.1 / (146-(1/w_effn**2))) + (255.4 / (41 - (1/w_effn**2))))) + 1
 
     #Calc R_0
-    R_0 = (n**2 - 1) / (2 * n**2)
+    #R_0 = (n**2 - 1) / (2 * n**2)
 
-    #Calc Z
+    R_0 = R0(w_eff)
+
     Z = np.arccos(1/airmass)
 
     R = R_0*np.tan(Z)
 
-    return np.rad2deg(R) * 3600
+    return np.rad2deg(R) * 3600 
+
+def dcr_offset_inverse(w_eff_1, w_eff_0, dcr):
+
+    q = np.deg2rad(dcr / 3600)
+
+    R0_1 = R0(w_eff_1)
+    R0_0 = R0(w_eff_0)
+
+    z_crit = np.arctan(q / (R0_1 - R0_0))
+
+    return 1 / np.cos(z_crit)
+
+
+def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
+    '''
+    Function to offset the "center" of a colormap. Useful for
+    data with a negative min and positive max and you want the
+    middle of the colormap's dynamic range to be at zero.
+
+    Input
+    -----
+      cmap : The matplotlib colormap to be altered
+      start : Offset from lowest point in the colormap's range.
+          Defaults to 0.0 (no lower offset). Should be between
+          0.0 and `midpoint`.
+      midpoint : The new center of the colormap. Defaults to 
+          0.5 (no shift). Should be between 0.0 and 1.0. In
+          general, this should be  1 - vmax / (vmax + abs(vmin))
+          For example if your data range from -15.0 to +5.0 and
+          you want the center of the colormap at 0.0, `midpoint`
+          should be set to  1 - 5/(5 + 15)) or 0.75
+      stop : Offset from highest point in the colormap's range.
+          Defaults to 1.0 (no upper offset). Should be between
+          `midpoint` and 1.0.
+    '''
+    cdict = {
+        'red': [],
+        'green': [],
+        'blue': [],
+        'alpha': []
+    }
+
+    # regular index to compute the colors
+    reg_index = np.linspace(start, stop, 257)
+
+    # shifted index to match the data
+    shift_index = np.hstack([
+        np.linspace(0.0, midpoint, 128, endpoint=False), 
+        np.linspace(midpoint, 1.0, 129, endpoint=True)
+    ])
+
+    for ri, si in zip(reg_index, shift_index):
+        r, g, b, a = cmap(ri)
+
+        cdict['red'].append((si, r, r))
+        cdict['green'].append((si, g, g))
+        cdict['blue'].append((si, b, b))
+        cdict['alpha'].append((si, a, a))
+
+    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+    #plt.register_cmap(cmap=newcmap)
+
+    return newcmap
 
 def getsciimg(filefracday,paddedfield,filtercode,paddedccdid,imgtypecode,qid):
 
@@ -321,7 +415,7 @@ def getgaiacat(sra,sdec,srad,verb=2):
 
     return gaia_df
 '''
-def srcext(file, det_thresh, ana_thresh, catname):
+def srcext(file, det_thresh, ana_thresh, catname, ext_number=0):
     #print(os.getcwd())
     os.chdir('srcext')
     print('Making SExtractor catalog of '+file+'...')
@@ -331,7 +425,8 @@ def srcext(file, det_thresh, ana_thresh, catname):
     if os.path.isfile(catname) == True:
         print('This catalogue already exists, moving on...')
     else:
-        os.system('sex ' + file + ' -c default.sex' + ' -DETECT_THRESH ' + str(det_thresh) + ' -ANALYSIS_THRESH ' + str(ana_thresh) + ' -CATALOG_NAME ' + str(catname))
+        os.system('sex ' + file + ' -c default.sex' + ' -DETECT_THRESH ' + str(det_thresh) + ' -ANALYSIS_THRESH ' 
+                  + str(ana_thresh) + ' -CATALOG_NAME ' + str(catname))
 
     cata_df = pd.read_table(catname, names=['NUMBER',
     'X_IMAGE',
@@ -625,3 +720,22 @@ def gcd(lat1, lat2, lon1, lon2, haversine=False):
         dsig = 2 * np.arcsin(np.sqrt(np.sin(dlat / 2))**2 + (1 - np.sin(dlat/2)**2 - np.sin((lat1 + lat2) / 2)**2) * np.sin(dlon / 2)**2)
         
     return dsig
+
+def makeGaussian(size, fwhm_x = 3, fwhm_y = 3, center=None):
+    """ Make a square gaussian kernel.
+
+    size is the length of a side of the square
+    fwhm is full-width-half-maximum, which
+    can be thought of as an effective radius.
+    """
+
+    x = np.arange(0, size, 1, float) 
+    y = x[:,np.newaxis]
+
+    if center is None:
+        x0 = y0 = size // 2
+    else:
+        x0 = center[0]
+        y0 = center[1]
+
+    return np.exp(-4*np.log(2) * ((x-x0)**2 / fwhm_x**2 + (y-y0)**2 / fwhm_y**2) )
