@@ -720,7 +720,7 @@ def gcd(lat1, lat2, lon1, lon2, haversine=False):
         dsig = 2 * np.arcsin(np.sqrt(np.sin(dlat / 2))**2 + (1 - np.sin(dlat/2)**2 - np.sin((lat1 + lat2) / 2)**2) * np.sin(dlon / 2)**2)
         
     return dsig
-
+''''
 def makeGaussian(size, fwhm_x = 3, fwhm_y = 3, center=None):
     """ Make a square gaussian kernel.
 
@@ -739,3 +739,17 @@ def makeGaussian(size, fwhm_x = 3, fwhm_y = 3, center=None):
         y0 = center[1]
 
     return np.exp(-4*np.log(2) * ((x-x0)**2 / fwhm_x**2 + (y-y0)**2 / fwhm_y**2) )
+'''
+
+def makeGaussian(size, A, x0, y0, sx, sy):
+    """ Make a square gaussian kernel.
+
+    size is the length of a side of the square
+    fwhm is full-width-half-maximum, which
+    can be thought of as an effective radius.
+    """
+
+    x = np.arange(0, size, 1, float) 
+    y = x[:,np.newaxis]
+
+    return A * np.exp(-(((x - x0)**2 / (2 * sx**2)) + ((y - y0)**2 / (2 * sy**2))))
