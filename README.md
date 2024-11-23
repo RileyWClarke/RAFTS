@@ -1,4 +1,5 @@
-# Flarubin
+# RAFTS 
+## Refraction Aided Flare Transient Studies
 
 Flares + Rubin LSST Ph.D Project
 
