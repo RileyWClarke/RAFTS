@@ -11,6 +11,7 @@ from astropy.io import fits
 
 import scipy
 from scipy.interpolate import interp1d
+from scipy.optimize import minimize
 
 import rubin_sim.photUtils.Bandpass as Bandpass
 import rubin_sim.photUtils.Sed as Sed
@@ -24,6 +25,43 @@ import astropy.units as u
 import warnings
 #suppress warnings
 warnings.filterwarnings('ignore')
+
+SQ2 = np.sqrt(2)
+
+def gaussian(x, A=1.0, mu=0.0, sigma=1.0):
+    """
+    Calculate the Gaussian function.
+
+    Parameters:
+    x (array-like): Input values where the Gaussian function will be evaluated.
+    A (float): Amplitude of the Gaussian (default is 1.0).
+    mu (float): Mean of the Gaussian (default is 0.0).
+    sigma (float): Standard deviation of the Gaussian (default is 1.0).
+
+    Returns:
+    array: Values of the Gaussian function evaluated at x.
+    """
+    return A * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+
+def lorentzian(x, A, x0, gamma):
+    """
+    Generate a Lorentzian function.
+
+    Parameters:
+    - x : array-like
+        The input values (independent variable).
+    - A : float
+        The amplitude (height) of the peak.
+    - x0 : float
+        The center of the peak.
+    - gamma : float
+        The full-width at half-maximum (FWHM) of the peak.
+
+    Returns:
+    - f : array-like
+        The Lorentzian function values.
+    """
+    return A / (1 + ((x - x0) / (gamma / 2)) ** 2)
 
 def make_bb(wavelengths, temp, normed = 1.0):
 
@@ -53,8 +91,8 @@ def make_bb(wavelengths, temp, normed = 1.0):
     T = u.Quantity(temp, unit=u.K)
 
     F_lambda = (((2*h*c**2)/l**5) * (1/(np.exp((h*c)/(l*k*T)) - 1)))
-    
-    return F_lambda.value * normed
+
+    return F_lambda.value * normed 
 
 def sed_integ(w, f):
     return np.nansum(f) / np.nanmean(np.diff(w))
@@ -81,7 +119,7 @@ def gen_mdspec(mdname, filename, extended=True):
 
     np.save(filename, md)
 
-def compspec(temp, md, ff, compplot=False):
+def compspec(temp, md, ff, balmer_ratio = 1, lines = None, lorentz_lines=False, linefrac=0.0, band='g', compplot=False):
     """
     Creates composite blackbody + m dwarf spectrum
 
@@ -102,20 +140,54 @@ def compspec(temp, md, ff, compplot=False):
         composite spectrum
     """
 
-    bb = make_bb(WAVELENGTH, temp) * globals.BBnorm
+    bandf = filt_interp(band=band)(WAVELENGTH)
+    maxpt = np.where(bandf == bandf.max())[0][0]
+    band_edges = (WAVELENGTH[bandf == bandf[(bandf > 0) * (WAVELENGTH < maxpt)].min()][0], 
+                        WAVELENGTH[bandf == bandf[(bandf > 0) * (WAVELENGTH > maxpt)].min()][0])
 
+
+    bb = make_bb(WAVELENGTH, temp) * globals.BBnorm
+    sed_plain = np.copy(bb + md)
     ff = ff / globals.FF #change to "units" of 0.05
 
-    if compplot:
-        plt.figure()
-        plt.plot(WAVELENGTH, md, label="dM5e Template Only")
-        plt.plot(WAVELENGTH, md + (bb * ff), label="Composite Spectrum")
-        plt.xlabel(r'Wavelength $(\AA)$')
-        plt.ylabel(r'$F_\lambda$ (arb. units)')
-        plt.title(r'Composite Spectrum w/ {0}K BB & $ff$ = {1} * 0.05'.format(temp,ff))
-        plt.legend()
-  
-    return md + (bb * ff)
+    balmer_step = np.ones_like(WAVELENGTH, dtype=float)
+    balmer_step[WAVELENGTH < 3700] = balmer_ratio
+    
+    if lines is not None:
+        
+        line_s = 3
+        sed_eng = sed_plain[band_edges[0]:band_edges[1]].sum()
+        #print(sed_eng)
+        lf = linefrac[0]
+        nl = 2
+        for i, line in enumerate(lines):
+            
+            if i == 2:
+                lf = linefrac[1]
+                nl = 3
+            
+            amp = np.sqrt(1 / (2 * np.pi * line_s**2)) * sed_eng * lf / nl
+            #print(gaussian(WAVELENGTH, A=amp, mu=line, sigma=line_s).sum())
+            bb += gaussian(WAVELENGTH, A=amp, mu=line, sigma=line_s)
+
+    if lorentz_lines:
+
+        sed_sum = sed_plain[band_edges[0]:band_edges[1]].sum()
+        #print('Sum under blackbody = {}'.format(sed_sum))
+
+        lf = linefrac[0]
+        l = lorentzian(WAVELENGTH, *linedict[linenames[0]]) +  lorentzian(WAVELENGTH, *linedict[linenames[1]])
+        lnew = l * (sed_sum / l.sum()) * lf 
+        bb += lnew
+        #print('Sum under Ca lines = {0} ({1}% of blackbody)'.format(lnew.sum(), (lnew.sum() / sed_sum)*100))
+
+        lf = linefrac[1]
+        l = lorentzian(WAVELENGTH, *linedict[linenames[2]]) +  lorentzian(WAVELENGTH, *linedict[linenames[3]]) + lorentzian(WAVELENGTH, *linedict[linenames[4]])
+        lnew = l * (sed_sum / l.sum()) * lf 
+        bb += lnew
+        #print('Sum under H lines = {0} ({1}% of blackbody)'.format(lnew.sum(), (lnew.sum() / sed_sum)*100))
+
+    return md + (bb * ff * balmer_step)
 
 def filt_interp(band,plotit=False):
 
@@ -135,7 +207,7 @@ def filt_interp(band,plotit=False):
 
     lsst = {}
     lsst[band] = Bandpass()
-    lsst[band].readThroughput('baseline/total_' + band + '.dat')
+    lsst[band].readThroughput('/Users/riley/Desktop/RAFTS/baseline/total_' + band + '.dat')
 
     sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
@@ -144,7 +216,8 @@ def filt_interp(band,plotit=False):
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
-def lamb_eff_md(band, temp, mdpath = 'mdspec.npy', ff=globals.FF, WAVELENGTH=WAVELENGTH, mdonly=False, compplot=False):
+def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m5.active.ha.na.k_ext.npy', ff=globals.FF, balmer_ratio = 1.0, 
+                lines=None, lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None):
 
     """
     Calculates the effective wavelength in arcsec for md + BB sed
@@ -172,11 +245,10 @@ def lamb_eff_md(band, temp, mdpath = 'mdspec.npy', ff=globals.FF, WAVELENGTH=WAV
     #Create composite spectrum
     wave = WAVELENGTH
     mdspec = np.load(mdpath)
-    mdbb = compspec(temp, md=mdspec, ff=ff, compplot=compplot)
+    mdbb = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=False, linefrac=linefrac, compplot=compplot)
+    mdbb_lines = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=lorentz_lines, linefrac=linefrac, compplot=False)
+    mdq = compspec(temp=0, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=False, linefrac=linefrac, compplot=False)
 
-    if mdonly:
-        mdbb = compspec(temp, md=mdspec, ff=0.0)
-    
     #Import filter
     f = filt_interp(band=band)
     interpolated_filt = f(wave)
@@ -202,17 +274,55 @@ def lamb_eff_md(band, temp, mdpath = 'mdspec.npy', ff=globals.FF, WAVELENGTH=WAV
     BBright = np.where(np.abs(wave - s_right) == np.abs(wave - s_right).min())[0][0]
     
     #Slice spectrum
-    mdbb = mdbb[BBleft:BBright]
-    wave = wave[BBleft:BBright]
+    mdbb_band = mdbb[BBleft:BBright]
+    mdbb_lines_band = mdbb_lines[BBleft:BBright]
+    mdq_band = mdq[BBleft:BBright]
+    wave_band = wave[BBleft:BBright]
 
     #if verbose:
         #print("Calculating BB at T = {} K".format(temp))
         
     #Calc effective lambda
-    w_eff = np.exp(np.sum(mdbb * interpolated_filt[BBleft:BBright] * np.log(wave)) / 
-                   np.sum(mdbb * interpolated_filt[BBleft:BBright]))
-   
-    return w_eff
+    w_eff = np.exp(np.sum(mdbb_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                   np.sum(mdbb_band * interpolated_filt[BBleft:BBright]))
+    
+    w_eff_lines = np.exp(np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                   np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright]))
+    
+    w_effq = np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                    np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
+    
+    if compplot:
+
+        ax.plot(WAVELENGTH, mdq, label="dM only")
+        ax.plot(WAVELENGTH, mdbb, label="dM + blackbody")
+        ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines")
+        ax.set_xlabel(r'Wavelength $(\AA)$', fontsize=16)
+        ax.set_ylabel(r'$F_\lambda$ (arb. units)', fontsize=16)
+        ax.set_title(r'$T_{BB}$ = ' + '{0}K'.format(temp) + ', Ca line energy = {0:.1f}%, H line energy = {1:.1f}%'.format(linefrac[0] * 100, linefrac[1] * 100), fontsize=16)
+        ax.xaxis.set_tick_params(labelsize=12)
+        ax.yaxis.set_tick_params(labelsize=12)
+
+        ax2.set_ylabel('Filter Throughput', fontsize=16)
+        ax2.tick_params(axis ='y')
+        ax2.yaxis.set_tick_params(labelsize=12)
+        ax2.vlines(w_effq, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_effq) == abs(WAVELENGTH - w_effq).min())[0][0]], 
+                   color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
+        ax2.vlines(w_eff, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff) == abs(WAVELENGTH - w_eff).min())[0][0]], 
+                   color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
+        ax2.vlines(w_eff_lines, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff_lines) == abs(WAVELENGTH - w_eff_lines).min())[0][0]], 
+                   color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
+
+        ax2.plot(WAVELENGTH, interpolated_filt, color='k', alpha=0.4)
+
+        ax.set_xlim(BBleft, BBright)
+        ax.set_ylim(None, np.nanmax(mdbb_lines_band))
+        #ax.legend()
+
+    if lorentz_lines:
+        return w_eff_lines
+    else:
+        return w_eff
 
 def lamb_eff_BB(band, temp, verbose=False):
 
@@ -284,7 +394,7 @@ def R0(w_eff):
     #Calc R_0
     return (n**2 - 1) / (2 * n**2)
 
-def dcr_offset(w_eff, airmass):
+def dcr_offset(w_eff, airmass, coord = None, header = None, chrDistCorr=False):
 
     """
     Calculates the DCR offset in arcsec
@@ -316,6 +426,12 @@ def dcr_offset(w_eff, airmass):
     Z = np.arccos(1/airmass)
 
     R = R_0*np.tan(Z)
+
+    if chrDistCorr:
+
+        corr = chrDistCorr(w_eff, coord, header)
+
+        return np.rad2deg(R) * 3600 * corr
 
     return np.rad2deg(R) * 3600 
 
@@ -402,19 +518,7 @@ def getrefimg(paddedfield,filtercode,paddedccdid,qid):
     print("Querying: "+url)
     hdu = fits.open(url)
     hdu.writeto('srcext/'+str(paddedfield)+'_refimg'+'.fits', overwrite=True)
-'''
-def getgaiacat(sra,sdec,srad,verb=2):
-    
-    Gaia.ROW_LIMIT = 200 
-    coord = SkyCoord(ra=sra, dec=sdec, unit=(u.degree, u.degree), frame='icrs')
-    radius = u.Quantity(srad, u.deg)
-    j = Gaia.cone_search_async(coord, radius)
-    r = j.get_results()
-   
-    gaia_df = pd.DataFrame({'ra':r['ra'], 'dec':r['dec'], 'gmag':r['phot_g_mean_mag'], 'rmag':r['phot_rp_mean_mag']})
 
-    return gaia_df
-'''
 def srcext(file, det_thresh, ana_thresh, catname, ext_number=0):
     #print(os.getcwd())
     os.chdir('srcext')
@@ -484,9 +588,9 @@ def circle_cut(imgcen_ra, imgcen_dec, cat, radius):
 
     return ind
 
-def calc_zenith(date):
+def calc_zenith(date, site):
 
-    mtn = EarthLocation.of_site('Palomar')
+    mtn = EarthLocation.of_site(site)
     mjd = Time(date, format='mjd')
 
     zenith = SkyCoord(AltAz(alt=90 * u.degree, az=0 * u.degree, obstime = mjd, location=mtn)).transform_to(ICRS())
@@ -627,7 +731,7 @@ def pa(h, phi, d):
 
     return q / deg2rad
 
-def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
+def celest_to_pa(ra, dec, time, loc, delra=None, deldec=None, round_lmst = False, verbose = False):
 
     '''
     Convert celestial coordinates to a parallactic angle given
@@ -667,7 +771,17 @@ def celest_to_pa(ra, dec, time, loc, round_lmst = False, verbose = False):
         print('time = {}'.format(t))
         print('LMST = {}'.format(lst.hms))
         print('ha = {}'.format(ha))
-    return pa(ha, lat, dec) 
+
+    if delra is not None and deldec is not None:
+
+        delh = ha2deg * delra
+        dpa = pa_error(ha, dec, loc.lat.deg, delh, deldec)
+
+        return pa(ha, lat, dec), dpa
+    
+    else:
+
+        return pa(ha, lat, dec) 
 
 def celest_to_ha(ra, dec, time, loc, round_lmst = False, verbose = False):
 
@@ -711,6 +825,60 @@ def celest_to_ha(ra, dec, time, loc, round_lmst = False, verbose = False):
         print('ha = {}'.format(ha))
     return ha
 
+def dpar(dra, ddec, pa2, delra = None, deldec = None, delpa2 = None):
+
+    '''
+    Compute component of positional offset parallel to zenith direction
+
+    Parameters
+    -------------
+    dra: float
+        Change in right Ascension in degrees
+    ddec: float
+        Change in declination in degrees
+    pa2: float
+        Parallactic angle of second position in degreees
+
+    Returns
+    -------------
+    float 
+        zenith-parallel component
+    '''
+
+    dparallel = np.sqrt(dra**2 + ddec**2) * np.cos((np.pi/2) - np.deg2rad(pa2) - np.arctan2(ddec, dra))
+
+    if delra is not None and deldec is not None and delpa2 is not None:
+
+        dparallel_err, ddra, dddec, ddpar2 = dpar_error(dra, ddec, pa2, delra, deldec, delpa2)
+
+        return dparallel, dparallel_err, ddra, dddec, ddpar2
+    
+    else:
+
+        return dparallel
+
+def dtan(dra, ddec, pa2):
+
+    '''
+    Compute component of positional offset perpendicular to zenith direction
+
+    Parameters
+    -------------
+    dra: float
+        Change in right Ascension in degrees
+    ddec: float
+        Change in declination in degrees
+    pa2: float
+        Parallactic angle of second position in degreees
+
+    Returns
+    -------------
+    float 
+        zenith-parallel component
+    '''
+
+    return np.sqrt(dra**2 + ddec**2) * np.sin((np.pi/2) - np.deg2rad(pa2) - np.arctan(ddec/dra))
+
 def gcd(lat1, lat2, lon1, lon2, haversine=False):
     dlat = np.abs(lat2 - lat1)
     dlon = np.abs(lon2 - lon1)
@@ -720,36 +888,121 @@ def gcd(lat1, lat2, lon1, lon2, haversine=False):
         dsig = 2 * np.arcsin(np.sqrt(np.sin(dlat / 2))**2 + (1 - np.sin(dlat/2)**2 - np.sin((lat1 + lat2) / 2)**2) * np.sin(dlon / 2)**2)
         
     return dsig
-''''
-def makeGaussian(size, fwhm_x = 3, fwhm_y = 3, center=None):
-    """ Make a square gaussian kernel.
 
-    size is the length of a side of the square
-    fwhm is full-width-half-maximum, which
-    can be thought of as an effective radius.
-    """
+def pa_error(h, dec, phi, dh, ddec):
 
-    x = np.arange(0, size, 1, float) 
-    y = x[:,np.newaxis]
+    h = h * ha2deg * deg2rad
+    dec = dec * deg2rad
+    phi = phi * deg2rad
+    dh = dh * deg2rad
+    ddec = ddec * deg2rad
 
-    if center is None:
-        x0 = y0 = size // 2
+    dPdh = (-(np.cos(dec) * np.cos(h) * np.tan(phi)) + (np.sin(dec) * np.sin(h)**2) + (np.sin(dec) * np.cos(h)**2)) / ((-2 * np.sin(dec) * np.cos(dec) * np.cos(h) * np.tan(phi)) + (np.sin(dec)**2 * np.cos(h)**2) + (np.cos(dec)**2 * np.tan(phi)**2) + np.sin(h)**2)
+    
+    dPdd = (np.sin(h) * (np.cos(h) * np.cos(dec) + np.sin(dec) * np.tan(phi))) / ((np.cos(h) * np.sin(dec) - np.cos(dec) * np.tan(phi))**2 + np.sin(h)**2)
+
+    err = np.sqrt( (dPdh * np.rad2deg(dh))**2 + (dPdd * np.rad2deg(ddec))**2 )
+
+    return err
+
+def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
+
+    ddpar_ddra = (dra * np.sin(np.arctan(ddec/dra) + np.deg2rad(pa2)) - ddec * np.cos(np.arctan(ddec/dra) + np.deg2rad(pa2))) / np.sqrt(dra**2 + ddec**2)
+    ddpar_dddec = (ddec * np.sin(np.arctan(ddec/dra) + np.deg2rad(pa2)) + dra * np.cos(np.arctan(ddec/dra) + np.deg2rad(pa2))) / np.sqrt(dra**2 + ddec**2)
+    ddpar_dpa2 = np.sqrt(dra**2 + ddec**2) * np.cos(np.arctan(ddec/dra) + np.deg2rad(pa2))
+
+    err = np.sqrt( (ddpar_ddra * delra)**2 + (ddpar_dddec * deldec)**2 + (ddpar_dpa2 * delpa2)**2 )
+
+    return err, ddpar_ddra, ddpar_dddec, ddpar_dpa2
+
+def obj(T, weff_0=4841.425781369825):
+
+    manual_linefrac = [0.50, 0.50]
+
+    weff = lamb_eff_md(band = 'g', temp = T, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', lorentz_lines=True, linefrac=manual_linefrac)
+    
+    return abs(weff_0 - weff)
+
+Nfeval = 1
+
+def callbackF(Xi):
+    global Nfeval
+    print(Nfeval, obj(Xi), Xi)
+    Nfeval += 1
+
+def inverse_Teff(delta_dcr, quiescent_dcr, airmass, callback=False, return_weff = False):
+
+    dcr_f = delta_dcr + quiescent_dcr
+
+    R_0 = dcr_f / np.rad2deg(np.tan(np.arccos(1 / airmass)))
+
+    n = 1 / np.sqrt(1 - (2 * R_0))
+    ir_factor = ((1.4965 * n - 1.496907944477) * 1e3)
+    weff = np.sqrt((5 * np.sqrt(7) * 
+                    np.sqrt(3.9375 * n**2 - 7.8776997855 * n + 3.940200259046195407)) / ir_factor
+                    #np.sqrt(3_937_500_000_000_000_000 * n**2 - 7_877_699_785_500_000_000 * n + 3_940_200_259_046_195_407)) / 
+                   #(1_496_500_000_000 * n - 1_496_907_944_477) 
+                   + (46.75 * n) / ir_factor - 46.760445709 / ir_factor) / SQ2
+    weff *= 1e4
+
+    init_guess = 2800.0
+    if callback:
+        result = minimize(obj, init_guess, args=weff, callback=callbackF, method='Nelder-Mead', options = {'disp':True, 'gtol':1e-2})
     else:
-        x0 = center[0]
-        y0 = center[1]
+        result = minimize(obj, init_guess, args=weff, method='Nelder-Mead', options = {'gtol':1e-2})
 
-    return np.exp(-4*np.log(2) * ((x-x0)**2 / fwhm_x**2 + (y-y0)**2 / fwhm_y**2) )
-'''
+    if return_weff:
+        return result.x, weff
+    else:
+        return result.x 
 
-def makeGaussian(size, A, x0, y0, sx, sy):
-    """ Make a square gaussian kernel.
+###DMTN-037 refraction calculations
 
-    size is the length of a side of the square
-    fwhm is full-width-half-maximum, which
-    can be thought of as an effective radius.
-    """
+def R(l, Z):
 
-    x = np.arange(0, size, 1, float) 
-    y = x[:,np.newaxis]
+    chi = CHI
+    beta = BETA
+    n = n_0(l)
 
-    return A * np.exp(-(((x - x0)**2 / (2 * sx**2)) + ((y - y0)**2 / (2 * sy**2))))
+    return (chi * (n - 1) * (1 - beta) * np.tan(np.deg2rad(Z)) - chi * (1 - n) * (beta - ((n - 1) / 2)) * np.tan(np.deg2rad(Z))**3) * 3600
+
+def n_0(l):
+
+    sigma = 1e4 / l
+    dn_s = (2371.34 + (683939.7 / (130 - sigma**2)) + (4547.3 / (38.9 - sigma**2))) * D_S * 1e-8
+    dn_w = (6487.31 + 58.058 * sigma**2 - 0.7115 * sigma**4 + 0.08851 * sigma**6) * D_W * 1e-8
+
+    return 1 + dn_s + dn_w
+
+###
+
+def chrDistCorr(wavelength, coord, header):
+
+    source = np.array([coord.ra.value, coord.dec.value])
+    zenith = np.zeros_like(source)
+    center = np.zeros_like(source)
+
+    zenith[0] = SkyCoord(AltAz(alt=90 * u.degree, az=0 * u.degree, obstime = coord.obstime, location=EarthLocation.of_site('Cerro Tololo'))).transform_to(ICRS()).ra.value
+    zenith[1] = SkyCoord(AltAz(alt=90 * u.degree, az=0 * u.degree, obstime = coord.obstime, location=EarthLocation.of_site('Cerro Tololo'))).transform_to(ICRS()).dec.value
+    center[0] = header['CENTRA']
+    center[1] = header['CENTDEC']
+
+    a = gcd(np.deg2rad(center[1]), np.deg2rad(zenith[1]), np.deg2rad(center[0]), np.deg2rad(zenith[0]))
+    b = gcd(np.deg2rad(source[1]), np.deg2rad(center[1]), np.deg2rad(source[0]), np.deg2rad(center[0]))
+    c = gcd(np.deg2rad(zenith[1]), np.deg2rad(source[1]), np.deg2rad(zenith[0]), np.deg2rad(source[0]))
+
+    A = np.arccos( (np.cos(a) - np.cos(b) * np.cos(c))  / (np.sin(b) * np.sin(c)) ) 
+
+    theta = np.pi - A
+
+    pixpermm = 153 / 2.3
+    arcsecperpix = 0.2637
+
+    new_w = np.arange(batoid_trace[0][0],batoid_trace[0][-1],1)
+    f = interp1d(x = batoid_trace[0], y=batoid_trace[1] * 1e-3 * pixpermm * arcsecperpix, kind='quadratic')
+
+    dist_mag = f(new_w)[np.where(abs(new_w - wavelength) == abs(new_w - wavelength).min())[0]]
+
+    return dist_mag * np.cos(theta)
+
+    
