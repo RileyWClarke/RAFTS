@@ -16,3 +16,17 @@ venv/
 
 #Jupyter checkpoints
 .ipynb_checkpoints
+.DS_Store
+
+#SExtractor
+srcext/*.cat
+
+#Gif folders
+Figures/dwf_gif/
+Figures/vectorgif/
+
+#Big files
+dwfflare/
+dwfflare_rubin_v19/
+
+output.png
