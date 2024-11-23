@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="file:///usr/local/share/sextractor/sextractor.xsl"?>
+<?xml-stylesheet type="text/xsl" href="file:///usr/local/Cellar/sextractor/2.28.0/share/sextractor/sextractor.xsl"?>
 <VOTABLE version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.1">
 <DESCRIPTION>produced by SExtractor</DESCRIPTION>
 <!-- VOTable description at http://www.ivoa.net/Documents/latest/VOT.html -->
-<RESOURCE ID="SExtractor" name="20200205456227_000819_sciimg.fits">
+<RESOURCE ID="SExtractor" name="489f990fd94eb9cff4b14219e98b6bde_c4d_151218_061146_ooi_g_v1_S18.fits.fz">
  <DESCRIPTION>Catalog of sources extracted with SExtractor</DESCRIPTION>
  <INFO name="QUERY_STATUS" value="OK" />
  <COOSYS ID="J2000" equinox="J2000" epoch="J2000" system="ICRS"/>
- <TABLE ID="Source_List" name="20200205456227_000819_sciimg.fits/out">
+ <TABLE ID="Source_List" name="489f990fd94eb9cff4b14219e98b6bde_c4d_151218_061146_ooi_g_v1_S18.fits.fz/out">
   <DESCRIPTION>Table of sources detected in image</DESCRIPTION>
   <!-- Now comes the definition of each SExtractor parameter -->
   <FIELD name="NUMBER" ucd="meta.record" datatype="int" unit="">
@@ -18,6 +18,12 @@
   </FIELD>
   <FIELD name="Y_IMAGE" ucd="pos.cartesian.y;pos.barycenter;instr.det;meta.main" datatype="float" unit="pix">
    <DESCRIPTION>Object position along y</DESCRIPTION>
+  </FIELD>
+  <FIELD name="XPEAK_IMAGE" ucd="pos.cartesian.x" datatype="int" unit="pix">
+   <DESCRIPTION>x-coordinate of the brightest pixel</DESCRIPTION>
+  </FIELD>
+  <FIELD name="YPEAK_IMAGE" ucd="pos.cartesian.y" datatype="int" unit="pix">
+   <DESCRIPTION>y-coordinate of the brightest pixel</DESCRIPTION>
   </FIELD>
   <FIELD name="XWIN_IMAGE" ucd="pos.cartesian.x;instr.det" datatype="double" unit="pix">
    <DESCRIPTION>Windowed position estimate along x</DESCRIPTION>
@@ -31,17 +37,38 @@
   <FIELD name="YMODEL_IMAGE" ucd="pos.cartesian.y;stat.fit.param;instr.det;meta.main" datatype="double" unit="pix">
    <DESCRIPTION>Y coordinate from model-fitting</DESCRIPTION>
   </FIELD>
+  <FIELD name="XMAX_IMAGE" ucd="pos.cartesian.x;stat.max" datatype="int" unit="pix">
+   <DESCRIPTION>Maximum x-coordinate among detected pixels</DESCRIPTION>
+  </FIELD>
+  <FIELD name="YMAX_IMAGE" ucd="pos.cartesian.y;stat.max" datatype="int" unit="pix">
+   <DESCRIPTION>Maximum y-coordinate among detected pixels</DESCRIPTION>
+  </FIELD>
+  <FIELD name="XMIN_IMAGE" ucd="pos.cartesian.x;stat.min" datatype="int" unit="pix">
+   <DESCRIPTION>Minimum x-coordinate among detected pixels</DESCRIPTION>
+  </FIELD>
+  <FIELD name="YMIN_IMAGE" ucd="pos.cartesian.y;stat.min" datatype="int" unit="pix">
+   <DESCRIPTION>Minimum y-coordinate among detected pixels</DESCRIPTION>
+  </FIELD>
   <FIELD name="FLUX_AUTO" ucd="phot.flux;meta.main" datatype="float" unit="ct">
    <DESCRIPTION>Flux within a Kron-like elliptical aperture</DESCRIPTION>
   </FIELD>
   <FIELD name="FLUX_MODEL" ucd="phot.count;stat.fit.param" datatype="float" unit="ct">
    <DESCRIPTION>Flux from model-fitting</DESCRIPTION>
   </FIELD>
+  <FIELD name="FLUX_APER" ucd="phot.flux" datatype="float" unit="ct">
+   <DESCRIPTION>Flux vector within fixed circular aperture(s)</DESCRIPTION>
+  </FIELD>
   <FIELD name="MAG_AUTO" ucd="phot.mag;meta.main" datatype="float" unit="mag">
    <DESCRIPTION>Kron-like elliptical aperture magnitude</DESCRIPTION>
   </FIELD>
+  <FIELD name="MAGERR_AUTO" ucd="stat.stdev;phot.mag;meta.main" datatype="float" unit="mag">
+   <DESCRIPTION>RMS error for AUTO magnitude</DESCRIPTION>
+  </FIELD>
   <FIELD name="MAG_MODEL" ucd="phot.mag;stat.fit.param" datatype="float" unit="mag">
    <DESCRIPTION>Magnitude from model-fitting</DESCRIPTION>
+  </FIELD>
+  <FIELD name="MAG_APER" ucd="phot.mag" datatype="float" unit="mag">
+   <DESCRIPTION>Fixed aperture magnitude vector</DESCRIPTION>
   </FIELD>
   <FIELD name="FLUX_RADIUS" ucd="phys.size.radius;instr.det" datatype="float" unit="pix">
    <DESCRIPTION>Fraction-of-light radii</DESCRIPTION>
@@ -64,6 +91,12 @@
   <FIELD name="ELLIPTICITY" ucd="src.ellipticity;instr.det	" datatype="float" unit="">
    <DESCRIPTION>1 - B_IMAGE/A_IMAGE</DESCRIPTION>
   </FIELD>
+  <FIELD name="EXT_NUMBER" ucd="meta.id;meta.dataset" datatype="short" unit="">
+   <DESCRIPTION>FITS extension number</DESCRIPTION>
+  </FIELD>
+  <FIELD name="CLASS_STAR" ucd="src.class.starGalaxy" datatype="float" unit="">
+   <DESCRIPTION>S/G classifier output</DESCRIPTION>
+  </FIELD>
    <DATA>
    </DATA>
   </TABLE>
@@ -71,18 +104,18 @@
   <DESCRIPTION>SExtractor meta-data</DESCRIPTION>
   <INFO name="QUERY_STATUS" value="OK" />
   <PARAM name="Software" datatype="char" arraysize="*" ucd="meta.title;meta.software" value="SExtractor"/>
-  <PARAM name="Version" datatype="char" arraysize="*" ucd="meta.version;meta.software" value="2.19.5"/>
+  <PARAM name="Version" datatype="char" arraysize="*" ucd="meta.version;meta.software" value="2.28.0"/>
   <PARAM name="Soft_URL" datatype="char" arraysize="*" ucd="meta.ref.url;meta.software" value="http://astromatic.net/software/sextractor"/>
   <PARAM name="Soft_Auth" datatype="char" arraysize="*" ucd="meta.bib.author;meta.software" value="Emmanuel Bertin"/>
   <PARAM name="Soft_Ref" datatype="char" arraysize="*" ucd="meta.bib.bibcode;meta.software" value="1996A&amp;AS..117..393B"/>
   <PARAM name="NThreads" datatype="int" ucd="meta.number;meta.software" value="1"/>
-  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2022-05-10"/>
-  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="12:05:01"/>
-  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="18" unit="s"/>
-  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="Riley"/>
+  <PARAM name="Date" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="2024-09-09"/>
+  <PARAM name="Time" datatype="char" arraysize="*" ucd="time.event.end;meta.software" value="19:05:40"/>
+  <PARAM name="Duration" datatype="float" ucd="time.event;meta.software" value="12" unit="s"/>
+  <PARAM name="User" datatype="char" arraysize="*" ucd="meta.curation" value="riley"/>
   <PARAM name="Host" datatype="char" arraysize="*" ucd="meta.curation" value="(null)"/>
-  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/Riley/Desktop/Flarubin/srcext"/>
-  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="20200205456227_000819_sciimg.fits"/>
+  <PARAM name="Path" datatype="char" arraysize="*" ucd="meta.dataset" value="/Users/riley/Desktop/RAFTS/srcext"/>
+  <PARAM name="Image_Name" datatype="char" arraysize="*" ucd="obs.image;meta.fits" value="/Users/riley/Desktop/RAFTS/dwfflare/dwfflareS18/489f990fd94eb9cff4b14219e98b6bde_c4d_151218_061146_ooi_g_v1_S18.fits.fz"/>
   <TABLE ID="Extension_Data" name="Extension_Data">
    <DESCRIPTION>Data gathered by SExtractor for every FITS extension</DESCRIPTION>
    <!-- NExtensions may be 0 if an error occurred early in the processing -->
@@ -107,10 +140,10 @@
    <FIELD name="Satur_Level" datatype="float" arraysize="1" ucd="instr.saturation;phot.count" unit="ct"/>
    <DATA><TABLEDATA>
     <TR>
-     <TD>1</TD><TD>F</TD><TD>10/05/2022</TD><TD>12:05:01</TD><TD>17</TD><TD>380</TD><TD>377</TD>
-     <TD>Unnamed</TD><TD>238.715</TD>
-     <TD>7.50888</TD><TD>37.5444</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
-     <TD>5.8</TD><TD>57078.5</TD>
+     <TD>1</TD><TD>F</TD><TD>09/09/2024</TD><TD>19:05:40</TD><TD>12</TD><TD>172</TD><TD>164</TD>
+     <TD>Unnamed</TD><TD>22.2531</TD>
+     <TD>2.67007</TD><TD>13.3503</TD><TD>0</TD><TD>1</TD><TD>0.000000</TD>
+     <TD>0</TD><TD>50000</TD>
     </TR>
    </TABLEDATA></DATA>
   </TABLE>
@@ -124,13 +157,13 @@
   </TABLE>
   <RESOURCE ID="Config" name="Config">
    <DESCRIPTION>SExtractor configuration</DESCRIPTION>
-   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex 20200205456227_000819_sciimg.fits -c default.sex -DETECT_THRESH 5 -ANALYSIS_THRESH 5 -CATALOG_NAME 20200205456227_000819.cat"/>
+   <PARAM name="Command_Line" datatype="char" arraysize="*" ucd="obs.param" value="sex /Users/riley/Desktop/RAFTS/dwfflare/dwfflareS18/489f990fd94eb9cff4b14219e98b6bde_c4d_151218_061146_ooi_g_v1_S18.fits.fz -c default.sex -DETECT_MINAREA 20 -DETECT_THRESH 5 -ANALYSIS_THRESH 5"/>
    <PARAM name="Prefs_Name" datatype="char" arraysize="*" ucd="obs.param;meta.file" value="default.sex"/>
    <PARAM name="Catalog_Type" datatype="char" arraysize="*" ucd="meta.code;meta.table" value="ASCII_HEAD"/>
-   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="20200205456227_000819.cat"/>
+   <PARAM name="Catalog_Name" datatype="char" arraysize="*" ucd="meta;meta.table;meta.file" value="out.cat"/>
    <PARAM name="Parameters_Name" datatype="char" arraysize="*" ucd="meta;obs.param" value="default.param"/>
    <PARAM name="Detect_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.det" value="CCD"/>
-   <PARAM name="Detect_MinArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.min" value="25"/>
+   <PARAM name="Detect_MinArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.min" value="20"/>
    <PARAM name="Detect_MaxArea" unit="pix" datatype="int" ucd="obs.param;phys.area;stat.max" value="0"/>
    <PARAM name="Thresh_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param;instr.sensitivity" value="RELATIVE"/>
    <PARAM name="Detect_Thresh" datatype="double" arraysize="1" ucd="obs.param;instr.sensitivity" value="5"/>
@@ -171,6 +204,7 @@
    <PARAM name="BackPhoto_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="GLOBAL"/>
    <PARAM name="BackPhoto_Thick" unit="pix" datatype="int" ucd="obs.param" value="24"/>
    <PARAM name="Back_FiltThresh" unit="ct" datatype="double" ucd="obs.param;" value="0"/>
+   <PARAM name="Back_Pearson" datatype="double" ucd="obs.param;" value="2.5"/>
    <PARAM name="CheckImage_Type" datatype="char" arraysize="*" ucd="meta.code;obs.param" value="MODELS,-MODELS,-BACKGROUND"/>
    <PARAM name="CheckImage_Name" datatype="char" arraysize="*" ucd="meta.id;meta.file;meta.fits" value="prof.fits,subprof.fits,orig.fits"/>
    <PARAM name="Memory_ObjStack" datatype="int" ucd="meta.number;src;obs.param" value="3000"/>
@@ -187,7 +221,7 @@
    <PARAM name="Header_Suffix" datatype="char" arraysize="*" ucd="meta.id;meta.file" value=".head"/>
    <PARAM name="Write_XML" datatype="boolean" ucd="meta.code" value="T"/>
    <PARAM name="XML_Name" datatype="char" arraysize="*" ucd="meta;meta.file" value="sex.xml"/>
-   <PARAM name="XSL_URL" datatype="char" arraysize="*" ucd="meta.ref.url;meta.file" value="file:///usr/local/share/sextractor/sextractor.xsl"/>
+   <PARAM name="XSL_URL" datatype="char" arraysize="*" ucd="meta.ref.url;meta.file" value="file:///usr/local/Cellar/sextractor/2.28.0/share/sextractor/sextractor.xsl"/>
    <PARAM name="NThreads" datatype="int" ucd="meta.number" value="1"/>
    <PARAM name="FITS_Unsigned" datatype="boolean" ucd="meta.code;obs.param" value="F"/>
    <PARAM name="PSF_Name" datatype="char" arraysize="*" ucd="instr.det.psf;meta.file;meta.fits" value="default.psf"/>
