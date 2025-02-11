@@ -21,12 +21,14 @@ from config import *
 
 import astropy.constants as const
 import astropy.units as u
+from astropy.modeling.models import BlackBody
+
+import globals
+globals.initialize()
 
 import warnings
 #suppress warnings
 warnings.filterwarnings('ignore')
-
-SQ2 = np.sqrt(2)
 
 def gaussian(x, A=1.0, mu=0.0, sigma=1.0):
     """
@@ -97,9 +99,6 @@ def make_bb(wavelengths, temp, normed = 1.0):
 def sed_integ(w, f):
     return np.nansum(f) / np.nanmean(np.diff(w))
 
-import globals
-globals.initialize()
-
 def fitbb_to_m5(a, T, m5spec):
     bb = make_bb(WAVELENGTH, 3000) * 1e27 * a
     relevant_w = np.argmin(np.abs(WAVELENGTH - WMAX))
@@ -119,7 +118,7 @@ def gen_mdspec(mdname, filename, extended=True):
 
     np.save(filename, md)
 
-def compspec(temp, md, ff, balmer_ratio = 1, lines = None, lorentz_lines=False, linefrac=0.0, band='g', compplot=False):
+def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, band='g'):
     """
     Creates composite blackbody + m dwarf spectrum
 
@@ -148,27 +147,10 @@ def compspec(temp, md, ff, balmer_ratio = 1, lines = None, lorentz_lines=False, 
 
     bb = make_bb(WAVELENGTH, temp) * globals.BBnorm
     sed_plain = np.copy(bb + md)
-    ff = ff / globals.FF #change to "units" of 0.05
+    ff = ff / globals.FF #change to "units" of global FF
 
     balmer_step = np.ones_like(WAVELENGTH, dtype=float)
     balmer_step[WAVELENGTH < 3700] = balmer_ratio
-    
-    if lines is not None:
-        
-        line_s = 3
-        sed_eng = sed_plain[band_edges[0]:band_edges[1]].sum()
-        #print(sed_eng)
-        lf = linefrac[0]
-        nl = 2
-        for i, line in enumerate(lines):
-            
-            if i == 2:
-                lf = linefrac[1]
-                nl = 3
-            
-            amp = np.sqrt(1 / (2 * np.pi * line_s**2)) * sed_eng * lf / nl
-            #print(gaussian(WAVELENGTH, A=amp, mu=line, sigma=line_s).sum())
-            bb += gaussian(WAVELENGTH, A=amp, mu=line, sigma=line_s)
 
     if lorentz_lines:
 
@@ -187,7 +169,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lines = None, lorentz_lines=False, 
         bb += lnew
         #print('Sum under H lines = {0} ({1}% of blackbody)'.format(lnew.sum(), (lnew.sum() / sed_sum)*100))
 
-    return md + (bb * ff * balmer_step)
+    return md + ((bb * ff**2) * balmer_step)
 
 def filt_interp(band,plotit=False):
 
@@ -216,11 +198,11 @@ def filt_interp(band,plotit=False):
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
-def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m5.active.ha.na.k_ext.npy', ff=globals.FF, balmer_ratio = 1.0, 
-                lines=None, lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None):
+def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', ff=globals.FF, balmer_ratio = 1.0,
+                lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None):
 
     """
-    Calculates the effective wavelength in arcsec for md + BB sed
+    Calculates the effective wavelength in Angstroms for md + BB sed
 
     Parameters
     -----------
@@ -245,9 +227,7 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
     #Create composite spectrum
     wave = WAVELENGTH
     mdspec = np.load(mdpath)
-    mdbb = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=False, linefrac=linefrac, compplot=compplot)
-    mdbb_lines = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=lorentz_lines, linefrac=linefrac, compplot=False)
-    mdq = compspec(temp=0, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lines=lines, lorentz_lines=False, linefrac=linefrac, compplot=False)
+    mdbb = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lorentz_lines=False, linefrac=linefrac)
 
     #Import filter
     f = filt_interp(band=band)
@@ -275,8 +255,6 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
     
     #Slice spectrum
     mdbb_band = mdbb[BBleft:BBright]
-    mdbb_lines_band = mdbb_lines[BBleft:BBright]
-    mdq_band = mdq[BBleft:BBright]
     wave_band = wave[BBleft:BBright]
 
     #if verbose:
@@ -285,42 +263,50 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
     #Calc effective lambda
     w_eff = np.exp(np.sum(mdbb_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
                    np.sum(mdbb_band * interpolated_filt[BBleft:BBright]))
-    
-    w_eff_lines = np.exp(np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
-                   np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright]))
-    
-    w_effq = np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
-                    np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
-    
-    if compplot:
-
-        ax.plot(WAVELENGTH, mdq, label="dM only")
-        ax.plot(WAVELENGTH, mdbb, label="dM + blackbody")
-        ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines")
-        ax.set_xlabel(r'Wavelength $(\AA)$', fontsize=16)
-        ax.set_ylabel(r'$F_\lambda$ (arb. units)', fontsize=16)
-        ax.set_title(r'$T_{BB}$ = ' + '{0}K'.format(temp) + ', Ca line energy = {0:.1f}%, H line energy = {1:.1f}%'.format(linefrac[0] * 100, linefrac[1] * 100), fontsize=16)
-        ax.xaxis.set_tick_params(labelsize=12)
-        ax.yaxis.set_tick_params(labelsize=12)
-
-        ax2.set_ylabel('Filter Throughput', fontsize=16)
-        ax2.tick_params(axis ='y')
-        ax2.yaxis.set_tick_params(labelsize=12)
-        ax2.vlines(w_effq, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_effq) == abs(WAVELENGTH - w_effq).min())[0][0]], 
-                   color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
-        ax2.vlines(w_eff, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff) == abs(WAVELENGTH - w_eff).min())[0][0]], 
-                   color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
-        ax2.vlines(w_eff_lines, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff_lines) == abs(WAVELENGTH - w_eff_lines).min())[0][0]], 
-                   color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
-
-        ax2.plot(WAVELENGTH, interpolated_filt, color='k', alpha=0.4)
-
-        ax.set_xlim(BBleft, BBright)
-        ax.set_ylim(None, np.nanmax(mdbb_lines_band))
-        #ax.legend()
 
     if lorentz_lines:
+
+        mdbb_lines = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lorentz_lines=lorentz_lines, linefrac=linefrac)
+        mdq = compspec(temp=0, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lorentz_lines=False, linefrac=linefrac)
+
+        mdbb_lines_band = mdbb_lines[BBleft:BBright]
+        mdq_band = mdq[BBleft:BBright]
+
+        w_eff_lines = np.exp(np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                   np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright]))
+    
+        w_effq = np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                    np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
+        
+        if compplot:
+
+            ax.plot(WAVELENGTH, mdq, label="dM only")
+            ax.plot(WAVELENGTH, mdbb, label="dM + blackbody")
+            ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines")
+            ax.set_xlabel(r'Wavelength $(\AA)$', fontsize=16)
+            ax.set_ylabel(r'$F_\lambda$ (arb. units)', fontsize=16)
+            ax.set_title(r'$T_{BB}$ = ' + '{0}K'.format(temp) + ', Ca line fraction = {0:.1f}%, H line fraction = {1:.1f}%'.format(linefrac[0] * 100, linefrac[1] * 100), fontsize=16)
+            ax.xaxis.set_tick_params(labelsize=12)
+            ax.yaxis.set_tick_params(labelsize=12)
+
+            ax2.set_ylabel('Filter Throughput', fontsize=16)
+            ax2.tick_params(axis ='y')
+            ax2.yaxis.set_tick_params(labelsize=12)
+            ax2.vlines(w_effq, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_effq) == abs(WAVELENGTH - w_effq).min())[0][0]], 
+                    color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
+            ax2.vlines(w_eff, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff) == abs(WAVELENGTH - w_eff).min())[0][0]], 
+                    color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
+            ax2.vlines(w_eff_lines, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff_lines) == abs(WAVELENGTH - w_eff_lines).min())[0][0]], 
+                    color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
+
+            ax2.plot(WAVELENGTH, interpolated_filt, color='k', alpha=0.4)
+
+            ax.set_xlim(BBleft, BBright)
+            ax.set_ylim(None, np.nanmax(mdbb_lines_band))
+            #ax.legend()
+        
         return w_eff_lines
+    
     else:
         return w_eff
 
@@ -915,46 +901,53 @@ def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
 
     return err, ddpar_ddra, ddpar_dddec, ddpar_dpa2
 
-def obj(T, weff_0=4841.425781369825):
+def obj2(T, weff, ff, linefrac):
 
-    manual_linefrac = [0.50, 0.50]
-
-    weff = lamb_eff_md(band = 'g', temp = T, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', lorentz_lines=True, linefrac=manual_linefrac)
+    weff_test = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', 
+                            lorentz_lines=True, linefrac=linefrac)
     
-    return abs(weff_0 - weff)
+    return abs(weff - weff_test)
 
+def obj1(weff, dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta):
+    
+    R_0 = R0(weff)
+    Z = np.arccos(1/airmass)
+
+    dpar = ((np.rad2deg(R_0 * np.tan(Z)) * 3600 - dcr_q) - (((batoid_a * weff**2) + (batoid_b * weff) + batoid_c) * np.cos(theta)))
+  
+    return abs(dpar - dpar_0)
+    
 Nfeval = 1
 
 def callbackF(Xi):
     global Nfeval
-    print(Nfeval, obj(Xi), Xi)
+    print(Nfeval, obj1(Xi), Xi)
     Nfeval += 1
 
-def inverse_Teff(delta_dcr, quiescent_dcr, airmass, callback=False, return_weff = False):
+def inverse_Teff(delta_dcr, quiescent_dcr, airmass, ff, source_coord=None, source_header=None, callback=False, return_weff = False, linefrac=[0.0, 0.0]):
+    
+    dpar_0 = delta_dcr
+    dcr_q = quiescent_dcr
+    batoid_a, batoid_b, batoid_c = batoid_params
+    theta = chrDistAng(source_coord, source_header)
 
-    dcr_f = delta_dcr + quiescent_dcr
-
-    R_0 = dcr_f / np.rad2deg(np.tan(np.arccos(1 / airmass)))
-
-    n = 1 / np.sqrt(1 - (2 * R_0))
-    ir_factor = ((1.4965 * n - 1.496907944477) * 1e3)
-    weff = np.sqrt((5 * np.sqrt(7) * 
-                    np.sqrt(3.9375 * n**2 - 7.8776997855 * n + 3.940200259046195407)) / ir_factor
-                    #np.sqrt(3_937_500_000_000_000_000 * n**2 - 7_877_699_785_500_000_000 * n + 3_940_200_259_046_195_407)) / 
-                   #(1_496_500_000_000 * n - 1_496_907_944_477) 
-                   + (46.75 * n) / ir_factor - 46.760445709 / ir_factor) / SQ2
-    weff *= 1e4
-
-    init_guess = 2800.0
+    init_guess_1 = 4500
     if callback:
-        result = minimize(obj, init_guess, args=weff, callback=callbackF, method='Nelder-Mead', options = {'disp':True, 'gtol':1e-2})
+        result_1 =  minimize(obj1, init_guess_1, args = (dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta), callback=callbackF, method='Nelder-Mead', options = {'gtol':1e-3})
     else:
-        result = minimize(obj, init_guess, args=weff, method='Nelder-Mead', options = {'gtol':1e-2})
+        result_1 =  minimize(obj1, init_guess_1, args = (dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta), method='Nelder-Mead', options = {'gtol':1e-3})
+    weff = result_1.x
+
+    init_guess_2 = 2800.0
+    if callback:
+        result_2 = minimize(obj2, init_guess_2, args=(weff, ff, linefrac), callback=callbackF, method='Nelder-Mead', options = {'disp':True, 'gtol':1e-2})
+    else:
+        result_2 = minimize(obj2, init_guess_2, args=(weff, ff, linefrac), method='Nelder-Mead', options = {'gtol':1e-2})
 
     if return_weff:
-        return result.x, weff
+        return result_2.x, weff, theta
     else:
-        return result.x 
+        return result_2.x
 
 ###DMTN-037 refraction calculations
 
@@ -975,6 +968,27 @@ def n_0(l):
     return 1 + dn_s + dn_w
 
 ###
+
+def chrDistAng(coord, header):
+
+    source = np.array([coord.ra.value, coord.dec.value])
+    zenith = np.zeros_like(source)
+    center = np.zeros_like(source)
+
+    zenith[0] = SkyCoord(AltAz(alt=90 * u.degree, az=0 * u.degree, obstime = coord.obstime, location=EarthLocation.of_site('Cerro Tololo'))).transform_to(ICRS()).ra.value
+    zenith[1] = SkyCoord(AltAz(alt=90 * u.degree, az=0 * u.degree, obstime = coord.obstime, location=EarthLocation.of_site('Cerro Tololo'))).transform_to(ICRS()).dec.value
+    center[0] = header['CENTRA']
+    center[1] = header['CENTDEC']
+
+    a = gcd(np.deg2rad(center[1]), np.deg2rad(zenith[1]), np.deg2rad(center[0]), np.deg2rad(zenith[0]))
+    b = gcd(np.deg2rad(source[1]), np.deg2rad(center[1]), np.deg2rad(source[0]), np.deg2rad(center[0]))
+    c = gcd(np.deg2rad(zenith[1]), np.deg2rad(source[1]), np.deg2rad(zenith[0]), np.deg2rad(source[0]))
+
+    A = np.arccos( (np.cos(a) - np.cos(b) * np.cos(c))  / (np.sin(b) * np.sin(c)) ) 
+
+    theta = np.pi - A
+
+    return theta
 
 def chrDistCorr(wavelength, coord, header):
 
@@ -1004,5 +1018,3 @@ def chrDistCorr(wavelength, coord, header):
     dist_mag = f(new_w)[np.where(abs(new_w - wavelength) == abs(new_w - wavelength).min())[0]]
 
     return dist_mag * np.cos(theta)
-
-    
