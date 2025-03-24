@@ -21,5 +21,8 @@ def initialize():
     airmass = 1.1
 
     global FF
-    FF = 0.05
+    FF = 0.0025
+
+    global LF
+    LF = [0.115, 0.115]
 

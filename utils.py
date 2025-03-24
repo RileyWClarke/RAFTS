@@ -23,9 +23,6 @@ import astropy.constants as const
 import astropy.units as u
 from astropy.modeling.models import BlackBody
 
-import globals
-globals.initialize()
-
 import warnings
 #suppress warnings
 warnings.filterwarnings('ignore')
@@ -98,6 +95,9 @@ def make_bb(wavelengths, temp, normed = 1.0):
 
 def sed_integ(w, f):
     return np.nansum(f) / np.nanmean(np.diff(w))
+
+import globals
+globals.initialize()
 
 def fitbb_to_m5(a, T, m5spec):
     bb = make_bb(WAVELENGTH, 3000) * 1e27 * a
@@ -277,27 +277,29 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
     
         w_effq = np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
                     np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
-        
+
         if compplot:
 
-            ax.plot(WAVELENGTH, mdq, label="dM only")
-            ax.plot(WAVELENGTH, mdbb, label="dM + blackbody")
-            ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines")
+            ax.plot(WAVELENGTH, mdq * 500, label="dM only", color='C3')
+            ax.plot(WAVELENGTH, mdbb, label="dM + blackbody", color='C2')
+            ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines", color='C0')
+            ax.vlines(w_effq, -50, 300, color='C3', ls='--', label=r'$\lambda_\mathrm{eff, quiescent}$')
+            ax.vlines(w_eff, -50, 300, color='C2', ls='--', label=r'$\lambda_\mathrm{eff, flare}$')
+            ax.vlines(w_eff_lines, -50, 300, color='C0', ls='--', label=r'$\lambda_\mathrm{eff, flare + lines}$')
             ax.set_xlabel(r'Wavelength $(\AA)$', fontsize=16)
             ax.set_ylabel(r'$F_\lambda$ (arb. units)', fontsize=16)
-            ax.set_title(r'$T_{BB}$ = ' + '{0}K'.format(temp) + ', Ca line fraction = {0:.1f}%, H line fraction = {1:.1f}%'.format(linefrac[0] * 100, linefrac[1] * 100), fontsize=16)
             ax.xaxis.set_tick_params(labelsize=12)
             ax.yaxis.set_tick_params(labelsize=12)
 
             ax2.set_ylabel('Filter Throughput', fontsize=16)
             ax2.tick_params(axis ='y')
             ax2.yaxis.set_tick_params(labelsize=12)
-            ax2.vlines(w_effq, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_effq) == abs(WAVELENGTH - w_effq).min())[0][0]], 
-                    color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
-            ax2.vlines(w_eff, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff) == abs(WAVELENGTH - w_eff).min())[0][0]], 
-                    color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
-            ax2.vlines(w_eff_lines, 0, interpolated_filt[np.where(abs(WAVELENGTH - w_eff_lines) == abs(WAVELENGTH - w_eff_lines).min())[0][0]], 
-                    color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
+            #ax2.vlines(w_effq, ax2.get_ylim()[0], ax2.get_ylim()[1], 
+            #        color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
+            #ax2.vlines(w_eff, ax2.get_ylim()[0], ax2.get_ylim()[1], 
+            #        color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
+            #ax2.vlines(w_eff_lines, ax2.get_ylim()[0], ax2.get_ylim()[1], 
+            #        color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
 
             ax2.plot(WAVELENGTH, interpolated_filt, color='k', alpha=0.4)
 
@@ -305,7 +307,7 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
             ax.set_ylim(None, np.nanmax(mdbb_lines_band))
             #ax.legend()
         
-        return w_eff_lines
+        return w_eff_lines, w_eff, w_effq
     
     else:
         return w_eff
@@ -903,7 +905,7 @@ def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
 
 def obj2(T, weff, ff, linefrac):
 
-    weff_test = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', 
+    weff_test,_ ,_ = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', 
                             lorentz_lines=True, linefrac=linefrac)
     
     return abs(weff - weff_test)
@@ -948,6 +950,27 @@ def inverse_Teff(delta_dcr, quiescent_dcr, airmass, ff, source_coord=None, sourc
         return result_2.x, weff, theta
     else:
         return result_2.x
+    
+def inverseWeff(delta_dcr, quiescent_dcr, airmass, theta):
+    
+    dpar_0 = delta_dcr
+    dcr_q = quiescent_dcr
+    batoid_a, batoid_b, batoid_c = batoid_params
+
+    init_guess_1 = 4500
+    result =  minimize(obj1, init_guess_1, args = (dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta), method='Nelder-Mead', options = {'gtol':1e-3})
+
+    return result.x
+
+def inverseTeff(weff, ff, linefrac, callback=False):
+
+    init_guess_2 = 2800.0
+    if callback:
+        result_2 = minimize(obj2, init_guess_2, args=(weff, ff, linefrac), callback=callbackF, method='Nelder-Mead', options = {'disp':True, 'gtol':1e-2})
+    else:
+        result_2 = minimize(obj2, init_guess_2, args=(weff, ff, linefrac), method='Nelder-Mead', options = {'gtol':1e-2})
+    
+    return result_2.x
 
 ###DMTN-037 refraction calculations
 
@@ -1018,3 +1041,46 @@ def chrDistCorr(wavelength, coord, header):
     dist_mag = f(new_w)[np.where(abs(new_w - wavelength) == abs(new_w - wavelength).min())[0]]
 
     return dist_mag * np.cos(theta)
+
+
+def find_min_max_adjacent(array, index):
+    # Get the row and column from the index
+    row, col = index
+    
+    # Get the dimensions of the 2D array
+    rows, cols = array.shape
+    
+    # List to store the adjacent indices
+    adjacent_indices = []
+    
+    # Directions for the 8 possible adjacent cells (including diagonals)
+    directions = [(-1, -1), (-1, 0), (-1, 1),
+                  (0, -1),         (0, 1),
+                  (1, -1), (1, 0), (1, 1)]
+    
+    # Iterate over the directions and find the valid adjacent cells
+    for dr, dc in directions:
+        new_row, new_col = row + dr, col + dc
+        if 0 <= new_row < rows and 0 <= new_col < cols:
+            adjacent_indices.append((new_row, new_col))
+    
+    # Extract the values of the adjacent cells
+    adjacent_values = [array[r, c] for r, c in adjacent_indices]
+    
+    # Find the min and max values and their corresponding indices
+    min_value = min(adjacent_values)
+    max_value = max(adjacent_values)
+    
+    min_index = adjacent_indices[adjacent_values.index(min_value)]
+    max_index = adjacent_indices[adjacent_values.index(max_value)]
+    
+    return min_index, max_index
+
+def variance_weighted_mean(values, errors):
+
+    weights = 1 / errors**2
+    normWeights = np.array([w / np.sum(weights) for w in weights])
+
+    return np.sum(values * normWeights)
+
+
