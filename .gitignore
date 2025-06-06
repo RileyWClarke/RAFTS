@@ -29,9 +29,6 @@ Figures/vectorgif/
 dwfflare/
 dwfflare_rubin_v19/
 
-#Outdata
-Outdata/
-
 output.png
 baseline_v3.0_10yrs_airmass.csv
 baselines_airmasses.csv
