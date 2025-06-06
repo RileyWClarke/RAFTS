@@ -25,4 +25,5 @@ def initialize():
 
     global LF
     LF = [0.115, 0.115]
+    #LF = [0.0, 0.0]
 

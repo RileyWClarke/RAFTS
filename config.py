@@ -9,6 +9,11 @@ WMAX = 9200
 MDSPEC = '/Users/riley/Desktop/RAFTS/sdsstemplates/m5.active.ha.na.k.fits'
 AMS = np.linspace(1.05,1.2,num=6,dtype='float')
 
+#Flare star params
+plx = 10.27
+dist = 1000 / plx * u.pc
+Rstar = 0.1 * u.Rsun
+
 ### CTIO weather conditions
 RH = 0.0 #relative humidity (percent)
 TEMPERATURE = 15 + 273.15 #surface air temp (Kelvin)

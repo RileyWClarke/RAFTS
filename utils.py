@@ -171,6 +171,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, 
 
     return md + ((bb * ff**2) * balmer_step)
 
+
 def filt_interp(band,plotit=False):
 
     """
@@ -197,9 +198,16 @@ def filt_interp(band,plotit=False):
         plt.plot(w,sb)
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
+'''
+def filt_interp(band,plotit=False):
 
+    w = np.loadtxt('/Users/riley/Desktop/RAFTS/des_g.txt')[:,0]
+    sb = np.loadtxt('/Users/riley/Desktop/RAFTS/des_g.txt')[:,1]
+
+    return interp1d(w, sb, bounds_error=False, fill_value=0.0)
+'''
 def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', ff=globals.FF, balmer_ratio = 1.0,
-                lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None):
+                lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None, returnFlux=False):
 
     """
     Calculates the effective wavelength in Angstroms for md + BB sed
@@ -280,12 +288,14 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
 
         if compplot:
 
-            ax.plot(WAVELENGTH, mdq * 500, label="dM only", color='C3')
+            q_factor = np.nanmax(mdbb_lines) / np.nanmean(mdq)
+            print("Quiescent scale factor = {}".format(q_factor))
+            ax.plot(WAVELENGTH, mdq * q_factor, label="dM only", color='C3')
             ax.plot(WAVELENGTH, mdbb, label="dM + blackbody", color='C2')
             ax.plot(WAVELENGTH, mdbb_lines, label="dM + blackbody + lines", color='C0')
-            ax.vlines(w_effq, -50, 300, color='C3', ls='--', label=r'$\lambda_\mathrm{eff, quiescent}$')
-            ax.vlines(w_eff, -50, 300, color='C2', ls='--', label=r'$\lambda_\mathrm{eff, flare}$')
-            ax.vlines(w_eff_lines, -50, 300, color='C0', ls='--', label=r'$\lambda_\mathrm{eff, flare + lines}$')
+            ax.vlines(w_effq, -np.nanmax(mdq), np.nanmax(mdbb_lines) * 2, color='C3', ls='--', label=r'$\lambda_\mathrm{eff, quiescent}$')
+            ax.vlines(w_eff, -np.nanmax(mdq), np.nanmax(mdbb_lines) * 2, color='C2', ls='--', label=r'$\lambda_\mathrm{eff, flare}$')
+            ax.vlines(w_eff_lines, -np.nanmax(mdq), np.nanmax(mdbb_lines) * 2, color='C0', ls='--', label=r'$\lambda_\mathrm{eff, flare + lines}$')
             ax.set_xlabel(r'Wavelength $(\AA)$', fontsize=16)
             ax.set_ylabel(r'$F_\lambda$ (arb. units)', fontsize=16)
             ax.xaxis.set_tick_params(labelsize=12)
@@ -294,20 +304,25 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
             ax2.set_ylabel('Filter Throughput', fontsize=16)
             ax2.tick_params(axis ='y')
             ax2.yaxis.set_tick_params(labelsize=12)
-            #ax2.vlines(w_effq, ax2.get_ylim()[0], ax2.get_ylim()[1], 
-            #        color='C0', ls='--', label=r'$\lambda_{eff, quiescent}$')
-            #ax2.vlines(w_eff, ax2.get_ylim()[0], ax2.get_ylim()[1], 
-            #        color='C1', ls='--', label=r'$\lambda_{eff, flare}$')
-            #ax2.vlines(w_eff_lines, ax2.get_ylim()[0], ax2.get_ylim()[1], 
-            #        color='C2', ls='--', label=r'$\lambda_{eff, flare}$ (with lines)')
-
             ax2.plot(WAVELENGTH, interpolated_filt, color='k', alpha=0.4)
 
             ax.set_xlim(BBleft, BBright)
             ax.set_ylim(None, np.nanmax(mdbb_lines_band))
             #ax.legend()
+
+            if returnFlux:
+                g_flux = (np.nansum(interpolated_filt[BBleft:BBright] * mdq_band) / np.nansum(interpolated_filt[BBleft:BBright])) * (2*np.pi*u.sr) * (Rstar.to('cm') **2) / ((dist.to('cm'))**2)
+                g_flux_flare = (np.nansum(interpolated_filt[BBleft:BBright] * mdbb_band) / np.nansum(interpolated_filt[BBleft:BBright])) * (2*np.pi*u.sr) * (Rstar.to('cm') **2) / ((dist.to('cm'))**2)
+                g_flux_flare_lines = (np.nansum(interpolated_filt[BBleft:BBright] * mdbb_lines_band) / np.nansum(interpolated_filt[BBleft:BBright])) * (2*np.pi*u.sr) * (Rstar.to('cm') **2) / ((dist.to('cm'))**2)
+                g_mag = 22.5 - 2.5 * np.log10(g_flux.value)
+                g_mag_flare = 22.5 - 2.5 * np.log10(g_flux_flare.value)
+                g_mag_flare_lines = 22.5 - 2.5 * np.log10(g_flux_flare_lines.value)
+                delta_g = g_mag_flare - g_mag
+                delta_g_lines = g_mag_flare_lines - g_mag
         
-        return w_eff_lines, w_eff, w_effq
+                return w_eff_lines, w_eff, w_effq, delta_g, delta_g_lines, g_mag, g_mag_flare, g_mag_flare_lines
+            
+        return w_eff, w_eff_lines, w_effq
     
     else:
         return w_eff
