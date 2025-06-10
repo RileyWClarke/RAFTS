@@ -23,10 +23,17 @@ def mdwarf_interp(fname, plotit=False):
         function that interpolates mdx, mdy
     """
 
-    with fits.open(fname, mode="readonly") as hdulist:
-        data = hdulist[0].data[0]
-        wstart = hdulist[0].header[3]
-        wstep = hdulist[0].header[5]
+    try: 
+        with fits.open(fname, mode="readonly") as hdulist:
+            data = hdulist[0].data[0]
+            wstart = hdulist[0].header[3]
+            wstep = hdulist[0].header[5]
+            wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
+    except FileNotFoundError:
+        print("Warning: missing fits file - initializing md to zeros")
+        data = np.zeros(10000-30)
+        wstart = 3000
+        wstep = 100
         wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
 
     if plotit:

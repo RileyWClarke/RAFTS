@@ -27,3 +27,6 @@ def initialize():
     LF = [0.115, 0.115]
     #LF = [0.0, 0.0]
 
+    global ROOTDIR
+    ROOTDIR = "/Users/fbianco/RAFTS"
+
