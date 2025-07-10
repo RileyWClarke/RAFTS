@@ -27,6 +27,13 @@ import warnings
 #suppress warnings
 warnings.filterwarnings('ignore')
 
+def calc_w_eff(fluxc, filt, wavec):
+    #Calc effective lambda
+    w_eff = np.exp(np.sum( fluxc * filt * np.log(wavec)) / 
+                   np.sum( fluxc * filt))
+
+    return w_eff
+
 def gaussian(x, A=1.0, mu=0.0, sigma=1.0):
     """
     Calculate the Gaussian function.
@@ -99,11 +106,11 @@ def sed_integ(w, f):
 import globals
 globals.initialize()
 
-def fitbb_to_m5(a, T, m5spec):
+def fitbb_to_spec(a, T, mspec):
     bb = make_bb(WAVELENGTH, 3000) * 1e27 * a
     relevant_w = np.argmin(np.abs(WAVELENGTH - WMAX))
     indices = range(relevant_w-50, relevant_w)
-    x = np.abs(((bb[indices] - m5spec[indices])).sum())
+    x = np.abs(((bb[indices] - mspec[indices])).sum())
     return x
 
 def gen_mdspec(mdname, filename, extended=True):
@@ -113,7 +120,7 @@ def gen_mdspec(mdname, filename, extended=True):
 
     if extended:
         amplitude = 1
-        res = scipy.optimize.minimize(fitbb_to_m5, [amplitude], args=(3000, md))
+        res = scipy.optimize.minimize(fitbb_to_spec, [amplitude], args=(3000, md))
         md[WAVELENGTH >= WMAX] = (make_bb(WAVELENGTH, 3000) * 1e27 * res.x)[WAVELENGTH >= WMAX]
 
     np.save(filename, md)
@@ -190,7 +197,7 @@ def filt_interp(band,plotit=False):
 
     lsst = {}
     lsst[band] = Bandpass()
-    lsst[band].readThroughput('/Users/riley/Desktop/RAFTS/baseline/total_' + band + '.dat')
+    lsst[band].readThroughput(ROOTDIR + 'baseline/total_' + band + '.dat')
 
     sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
@@ -201,13 +208,14 @@ def filt_interp(band,plotit=False):
 '''
 def filt_interp(band,plotit=False):
 
-    w = np.loadtxt('/Users/riley/Desktop/RAFTS/des_g.txt')[:,0]
-    sb = np.loadtxt('/Users/riley/Desktop/RAFTS/des_g.txt')[:,1]
+    w = np.loadtxt(ROOTDIR + '/des_g.txt')[:,0]
+    sb = np.loadtxt(ROOTDIR + '/des_g.txt')[:,1]
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 '''
-def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', ff=globals.FF, balmer_ratio = 1.0,
-                lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, compplot=False, ax=None, ax2=None, returnFlux=False):
+def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectra["m7"], ff=globals.FF, balmer_ratio = 1.0,
+                lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, 
+                compplot=False, ax=None, ax2=None, returnFlux=False):
 
     """
     Calculates the effective wavelength in Angstroms for md + BB sed
@@ -269,8 +277,9 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
         #print("Calculating BB at T = {} K".format(temp))
         
     #Calc effective lambda
-    w_eff = np.exp(np.sum(mdbb_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
-                   np.sum(mdbb_band * interpolated_filt[BBleft:BBright]))
+    w_eff = calc_w_eff(mdbb_band, interpolated_filt[BBleft:BBright], wave_band)
+    #np.exp(np.sum(mdbb_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+            #       np.sum(mdbb_band * interpolated_filt[BBleft:BBright]))
 
     if lorentz_lines:
 
@@ -283,11 +292,14 @@ def lamb_eff_md(band, temp, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m
         w_eff_lines = np.exp(np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
                    np.sum(mdbb_lines_band * interpolated_filt[BBleft:BBright]))
     
-        w_effq = np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
-                    np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
+        w_effq = calc_w_eff(mdq_band, interpolated_filt[BBleft:BBright], wave_band)
+        #np.exp(np.sum(mdq_band * interpolated_filt[BBleft:BBright] * np.log(wave_band)) / 
+                 #   np.sum(mdq_band * interpolated_filt[BBleft:BBright]))
 
         if compplot:
-
+            if not ax:
+                fig, axs = plt.subplots(2)
+                ax, ax2 = axs
             q_factor = np.nanmax(mdbb_lines) / np.nanmean(mdq)
             print("Quiescent scale factor = {}".format(q_factor))
             ax.plot(WAVELENGTH, mdq * q_factor, label="dM only", color='C3')
@@ -381,11 +393,7 @@ def lamb_eff_BB(band, temp, verbose=False):
     #if verbose:
         #print("Calculating w_eff")
     
-    #Calc effective lambda
-    w_eff = np.exp(np.sum( BBfluxc * interpolated_filt[BBleft:BBright] * np.log(BBwavec)) / 
-                   np.sum( BBfluxc * interpolated_filt[BBleft:BBright]))
-   
-    return w_eff
+    return calc_w_eff(BBfluxc,  interpolated_filt[BBleft:BBright],  BBwavec)
 
 def R0(w_eff):
     #Docstring
@@ -920,7 +928,7 @@ def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
 
 def obj2(T, weff, ff, linefrac):
 
-    weff_test,_ ,_ = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = '/Users/riley/Desktop/RAFTS/sdsstemplates/m7.active.ha.na.k_ext.npy', 
+    weff_test,_ ,_ = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = 'sdsstemplates/m7.active.ha.na.k_ext.npy', 
                             lorentz_lines=True, linefrac=linefrac)
     
     return abs(weff - weff_test)
