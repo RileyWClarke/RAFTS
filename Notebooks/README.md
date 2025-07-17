@@ -4,6 +4,8 @@
 - `dwfflarePSFastrometry_revisions.ipynb` => produces the astrometric and photometric time series for all stars used in the analysis. Data frame with photometry is saved into `Outdata/main_df_GaussPSF.csv`
 - `dwfflarePSFastrometry_processing_NEWPSF.ipynb` => produces the time series of d_parallel which is used for the DCR analysis and saves it into `Outdata/flare_df.csv`. Saved intermediate files: 
 
+- `dwfflarePSFastrometry_statistical.ipynb` => produces the time series of d_parallel which is used for the DCR analysis and saves it into `Outdata/flare_df.csv`. Saved intermediate files: 
+
       'Outdata/dpar_arr.npy' => dpar for all stars
       'Outdata/dpar_raw.npy' => dpar flare star raw
       'Outdata/dpar_subtracted.npy' => dpar flare star removed median of all other stars
@@ -21,6 +23,9 @@
       `Outdata/ra_change.npy` => relative RA (relative to initial position)
       `Outdata/dec_chane.npy` => relative Dec (relative to initial position)
 
+- `dwfflare_dparrStatisticalAnalysis.ipynb` => finds the point of change in the d_parallel time series and measures the statistical significance
+
+-ADD HERE THE NB THAT MAKES THE FORWARD MODELING
 
   ...
 
