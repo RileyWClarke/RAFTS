@@ -15,6 +15,10 @@ plx = 10.27
 dist = 1000 / plx * u.pc
 Rstar = 0.1 * u.Rsun
 
+#Image set range - depends on how many images you stored
+start = 0
+end = 74
+
 ### CTIO weather conditions
 RH = 0.0 #relative humidity (percent)
 TEMPERATURE = 15 + 273.15 #surface air temp (Kelvin)
