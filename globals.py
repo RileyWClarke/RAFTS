@@ -20,13 +20,19 @@ def initialize():
     global airmass
     airmass = 1.1
 
-    global FF
+    global FF #default model filling factor
     FF = 0.0025
 
-    global LF
+    global LF #what is this?
     LF = [0.115, 0.115]
     #LF = [0.0, 0.0]
 
     global ROOTDIR
     ROOTDIR = "/Users/fbianco/RAFTS"
+
+    global flareid
+    flareid = 11
+
+    global window
+    window = 11
 
