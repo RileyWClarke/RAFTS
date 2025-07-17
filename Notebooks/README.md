@@ -23,3 +23,16 @@
 
 
   ...
+
+=========================
+
+Utility functions are in files which must be stored in the previous directory including:
+- defs.py
+- utils.py
+
+  
+=========================
+Additional files not part of the pipeline, but used for tests throughout our study
+- `dwfflarePSFastrometry_tests.ipynb` => tests different approaches to astrometry
+- 
+	
