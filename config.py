@@ -84,5 +84,5 @@ linedict = {'Ca II H': np.array([2.39550000e-13, 3.93184712e+03, 5.51710509e+00]
  'H$\\gamma$': np.array([4.10208099e-13, 4.33913340e+03, 8.00815074e+00]),
  'H$\\beta$': np.array([3.88398001e-13, 4.86003526e+03, 8.02575104e+00])}
 
-quiescent_spectra = {"m7": "/sdsstemplates/m7.active.ha.na.k.fits",
-			"m5": "/sdsstemplates/m5.active.ha.na.k.fits"}
+quiescent_spectra = {"m7": "/sdsstemplates/m7.active.ha.na.k_ext.npy",
+			"m5": "/sdsstemplates/m5.active.ha.na.k_ext.npy"}
