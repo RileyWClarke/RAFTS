@@ -179,7 +179,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, 
     return md + ((bb * ff**2) * balmer_step)
 
 
-def filt_interp(band,plotit=False):
+def filt_interp(band,plotit=False,path=ROOTDIR):
 
     """
     Imports and interpolates LSST filter
@@ -197,7 +197,7 @@ def filt_interp(band,plotit=False):
 
     lsst = {}
     lsst[band] = Bandpass()
-    lsst[band].readThroughput(ROOTDIR + 'baseline/total_' + band + '.dat')
+    lsst[band].readThroughput(path + 'baseline/total_' + band + '.dat')
 
     sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
