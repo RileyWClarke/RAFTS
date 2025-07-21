@@ -2,13 +2,14 @@ import numpy as np
 from astropy import units as u
 from astropy import constants as c
 from astropy.coordinates import EarthLocation
+import globals
 
-WAVELENGTH = np.arange(0,12001,1)
+WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
 WMAX = 9200
-ROOTDIR = '/Users/fbianco/RAFTS/'
+
+ROOTDIR = "/Users/fbianco/RAFTS"
 MDSPEC = ROOTDIR + 'sdsstemplates/m5.active.ha.na.k.fits'
-AMS = np.linspace(1.05,1.2,num=6,dtype='float')
 
 #Flare star params
 plx = 10.27
@@ -18,6 +19,13 @@ Rstar = 0.1 * u.Rsun
 #Image set range - depends on how many images you stored
 start = 0
 end = 74
+
+
+deg2rad = np.pi / 180
+ha2deg = 15.0
+
+#window size for median smoothing
+window = 11
 
 ### CTIO weather conditions
 RH = 0.0 #relative humidity (percent)
@@ -32,6 +40,8 @@ P_W = RH * 1e-4 * np.exp(77.345 + 0.0057 * TEMPERATURE - (7235 / TEMPERATURE)) /
 D_W = (1 + P_W * (1 + 3.7e-4 * P_W) * (-2.37321e-3 + (2.23366 / TEMPERATURE) - (710.792 / TEMPERATURE**2) + (7.75141e4 / TEMPERATURE**3))) * (P_W / TEMPERATURE)
 D_S = (1 + (P_S - P_W) * (57.90e-8 - (9.3250e-4 / TEMPERATURE) + (0.25844 / TEMPERATURE**2))) * ((P_S - P_W) / TEMPERATURE)
 
+
+AMS = np.linspace(1.05,1.2,num=6,dtype='float') ###FBB I would getread of this and add the AM as a file produced with the first code that extracts the chips from the N images
 AM =  np.array([1.46071187, 1.46383532, 1.46696313, 1.4701134 , 1.47325367,
        1.47644162, 1.47972646, 1.48297042, 1.48629275, 1.48949247,
        1.49289569, 1.49621113, 1.49956752, 1.50292117, 1.50630044,
@@ -48,8 +58,6 @@ AM =  np.array([1.46071187, 1.46383532, 1.46696313, 1.4701134 , 1.47325367,
        1.71348053, 1.71828197, 1.7231769 , 1.72809362, 1.73293621,
        1.73788664, 1.74284825, 1.74787617, 1.75291492])
 
-deg2rad = np.pi / 180
-ha2deg = 15.0
 
 def get_img_string(key):
     codes={'flare1ep1':'20200206287824000819zg13o2',
@@ -84,5 +92,7 @@ linedict = {'Ca II H': np.array([2.39550000e-13, 3.93184712e+03, 5.51710509e+00]
  'H$\\gamma$': np.array([4.10208099e-13, 4.33913340e+03, 8.00815074e+00]),
  'H$\\beta$': np.array([3.88398001e-13, 4.86003526e+03, 8.02575104e+00])}
 
-quiescent_spectra = {"m7": "/sdsstemplates/m7.active.ha.na.k_ext.npy",
-			"m5": "/sdsstemplates/m5.active.ha.na.k_ext.npy"}
+quiescent_spectra = {"m7": "/sdsstemplates/m7.active.ha.na.k.fits",
+			"m5": "/sdsstemplates/m5.active.ha.na.k.fits"}
+quiescent_spectranpy = {"m7": "/m7.npy",
+			"m5": "/m5.npy"}
