@@ -213,7 +213,7 @@ def filt_interp(band,plotit=False):
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 '''
-def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectra["m7"], ff=globals.FF, balmer_ratio = 1.0,
+def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectranpy["m7"], ff=globals.FF, balmer_ratio = 1.0,
                 lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, 
                 compplot=False, ax=None, ax2=None, returnFlux=False):
 
@@ -242,7 +242,7 @@ def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectra["m7"], ff=globa
 
     #Create composite spectrum
     wave = WAVELENGTH
-    mdspec = np.load(mdpath)
+    mdspec = np.load(mdpath, allow_pickle=True)
     mdbb = compspec(temp, md=mdspec, ff=ff, balmer_ratio=balmer_ratio, lorentz_lines=False, linefrac=linefrac)
 
     #Import filter
