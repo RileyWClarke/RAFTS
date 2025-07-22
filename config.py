@@ -25,7 +25,7 @@ deg2rad = np.pi / 180
 ha2deg = 15.0
 
 #window size for median smoothing
-window = 11
+window = 9
 
 ### CTIO weather conditions
 RH = 0.0 #relative humidity (percent)
