@@ -23,7 +23,7 @@
 
 - `dwfflare_dparrStatisticalAnalysis.ipynb` => finds the point of change in the d_parallel time series and measures the statistical significance
 
--ADD HERE THE NB THAT MAKES THE FORWARD MODELING
+- `dwfflareTeffModel.ipynb` => Ingests data from `Outdata/`, creates lookup tables for delta magnitude and effective wavelength as functions of blackbody temperature ($T_{BB}$) and filling factor ($X_{BB}$), for both the emission line SED model and the blackbody-only SED model. The dpar inputs are converted to effective wavelengths (`flr_weffs.csv`) and corrected for instrumental distortion. Errors on derived effective wavelengths are calculated via bootstrap. For each epoch in flr_weffs and delta_g_mag, the lookup tables are searched for $T_{BB}$ and $X_{BB}$ that minizmize the reduced $\chi^2$ of the inputs. Resulting $T_{BB}$ and $X_{BB}$ curves are output and plotted.
 
   ...
 
