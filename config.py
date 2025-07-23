@@ -2,7 +2,7 @@ import numpy as np
 from astropy import units as u
 from astropy import constants as c
 from astropy.coordinates import EarthLocation
-import globals
+
 
 WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
