@@ -13,8 +13,8 @@ import scipy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
-import rubin_sim.photUtils.Bandpass as Bandpass
-import rubin_sim.photUtils.Sed as Sed
+#import rubin_sim.phot_utils.bandpass as Bandpass
+#import rubin_sim.phot_utils.Sed as Sed
 
 from mdwarf_interp import *
 from config import *
@@ -179,7 +179,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, 
     return md + ((bb * ff**2) * balmer_step)
 
 
-def filt_interp(band,plotit=False,path=ROOTDIR):
+def filt_interp(band,plotit=False, survey='DES',path=ROOTDIR):
 
     """
     Imports and interpolates LSST filter
@@ -197,19 +197,18 @@ def filt_interp(band,plotit=False,path=ROOTDIR):
 
     lsst = {}
     lsst[band] = Bandpass()
-    lsst[band].readThroughput(path + 'baseline/total_' + band + '.dat')
+    lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
 
-    sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
+        sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
-    if plotit:
-        plt.plot(w,sb)
+        if plotit:
+            plt.plot(w,sb)
 
-    return interp1d(w, sb, bounds_error=False, fill_value=0.0)
-'''
-def filt_interp(band,plotit=False):
+        return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 
-    w = np.loadtxt(ROOTDIR + '/des_g.txt')[:,0]
-    sb = np.loadtxt(ROOTDIR + '/des_g.txt')[:,1]
+    if survey == 'DES':
+        w = np.loadtxt(ROOTDIR + 'des_g.txt')[:,0]
+        sb = np.loadtxt(ROOTDIR + 'des_g.txt')[:,1]
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
 '''

@@ -7,8 +7,7 @@ import globals
 WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
 WMAX = 9200
-
-ROOTDIR = "/Users/fbianco/RAFTS"
+ROOTDIR = '/Users/Riley/Desktop/RAFTS/'
 MDSPEC = ROOTDIR + 'sdsstemplates/m5.active.ha.na.k.fits'
 
 #Flare star params
