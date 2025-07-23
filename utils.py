@@ -195,9 +195,10 @@ def filt_interp(band,plotit=False, survey='DES',path=ROOTDIR):
         function that interpolates filtx,filty
     """
 
-    lsst = {}
-    lsst[band] = Bandpass()
-    lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
+    if survey == 'LSST':
+        lsst = {}
+        lsst[band] = Bandpass()
+        lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
 
         sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
 
@@ -211,7 +212,7 @@ def filt_interp(band,plotit=False, survey='DES',path=ROOTDIR):
         sb = np.loadtxt(ROOTDIR + 'des_g.txt')[:,1]
 
     return interp1d(w, sb, bounds_error=False, fill_value=0.0)
-'''
+
 def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectranpy["m7"], ff=globals.FF, balmer_ratio = 1.0,
                 lorentz_lines=False, linefrac=0.0, WAVELENGTH=WAVELENGTH, 
                 compplot=False, ax=None, ax2=None, returnFlux=False):
