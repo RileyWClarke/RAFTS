@@ -891,6 +891,30 @@ def dtan(dra, ddec, pa2):
     return np.sqrt(dra**2 + ddec**2) * np.sin((np.pi/2) - np.deg2rad(pa2) - np.arctan(ddec/dra))
 
 def gcd(lat1, lat2, lon1, lon2, haversine=False):
+
+    '''
+    Calculate the great circle distance between two points on the celestial sphere.
+
+    Parameters
+    -------------
+    lat1: float
+        Latitude of first point in radians
+    lat2: float
+        Latitude of second point in radians
+    lon1: float
+        Longitude of first point in radians
+    lon2: float
+        Longitude of second point in radians
+    haversine: bool
+        If True, use the haversine formula to calculate the distance.
+        If False, use the spherical law of cosines.
+    
+    Returns
+    -------------
+    float
+        Great circle distance in radians
+    '''
+    
     dlat = np.abs(lat2 - lat1)
     dlon = np.abs(lon2 - lon1)
     dsig = np.arccos(np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(dlon))
