@@ -7,7 +7,7 @@ from astropy.coordinates import EarthLocation
 WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
 WMAX = 9200
-ROOTDIR = '/Users/Riley/Desktop/RAFTS/'
+ROOTDIR = '/Users/fbianco/RAFTS/'
 MDSPEC = ROOTDIR + 'sdsstemplates/m5.active.ha.na.k.fits'
 
 #Flare star params
@@ -20,6 +20,9 @@ start = 0
 end = 74
 
 
+HOUR2SEC = 3_600
+DAY2SEC = HOUR2SEC * 24
+deg2arcsec = 3_600
 deg2rad = np.pi / 180
 ha2deg = 15.0
 
@@ -38,6 +41,7 @@ CHI = 1 + 5.302e-3 * np.sin(np.deg2rad(EarthLocation.of_site('Cerro Tololo').lat
 P_W = RH * 1e-4 * np.exp(77.345 + 0.0057 * TEMPERATURE - (7235 / TEMPERATURE)) / TEMPERATURE**8.2
 D_W = (1 + P_W * (1 + 3.7e-4 * P_W) * (-2.37321e-3 + (2.23366 / TEMPERATURE) - (710.792 / TEMPERATURE**2) + (7.75141e4 / TEMPERATURE**3))) * (P_W / TEMPERATURE)
 D_S = (1 + (P_S - P_W) * (57.90e-8 - (9.3250e-4 / TEMPERATURE) + (0.25844 / TEMPERATURE**2))) * ((P_S - P_W) / TEMPERATURE)
+
 
 
 AMS = np.linspace(1.05,1.2,num=6,dtype='float') ###FBB I would getread of this and add the AM as a file produced with the first code that extracts the chips from the N images

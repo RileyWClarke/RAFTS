@@ -30,5 +30,10 @@ def initialize():
     global flareid
     flareid = 11
 
+    global flare_ref_pos
+    flare_ref_pos = np.array([323.0, 429.5])
+
+    global rateCap 
+    rateCap = 0.00107 #percent-per-second change rate of flare ribbon evolution from Qiu+ 2008
 
 
