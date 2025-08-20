@@ -77,16 +77,16 @@ def make_bb(wavelengths, temp, normed = 1.0):
     Parameters
     -----------
     temp: float
-        Effective temperature of blackbody
+        Effective temperature of blackbody in Kelvin
     wavelenths: ndarray
-        wavelength array of blackbody
+        wavelength array of blackbody in Angstroms
     normed : float
         blackbodies are normalized to 1.0 at this value
 
     Returns
     -----------
     ndarray:
-        flux array of blackbody
+        flux array of blackbody in ergs / (cm^2 * s * Angstrom)
     """
     h = (const.h).cgs
     c = (const.c).cgs
@@ -101,12 +101,41 @@ def make_bb(wavelengths, temp, normed = 1.0):
     return F_lambda.value * normed 
 
 def sed_integ(w, f):
+    """
+    Integrate a spectrum f over wavelength w
+
+    Parameters
+    -----------
+    w: ndarray
+        wavelength array in Angstroms
+    f: ndarray
+        flux array in ergs / (cm^2 * s * Angstrom)
+    Returns
+    -----------
+    float:
+        integrated flux in ergs / (cm^2 * s)
+    """
     return np.nansum(f) / np.nanmean(np.diff(w))
 
 import globals
 globals.initialize()
 
-def fitbb_to_spec(a, T, mspec):
+def fitbb_to_spec(a, mspec):
+    """
+    Objective function to fit blackbody to m dwarf spectrum
+
+    Parameters
+    -----------
+    a: float
+        blackbody scale factor
+    mspec: ndarray
+        m dwarf spectrum
+
+    Returns
+    -----------
+    float:
+        sum of absolute differences between blackbody and m dwarf spectrum
+    """
     bb = make_bb(WAVELENGTH, 3000) * 1e27 * a
     relevant_w = np.argmin(np.abs(WAVELENGTH - WMAX))
     indices = range(relevant_w-50, relevant_w)
@@ -114,7 +143,23 @@ def fitbb_to_spec(a, T, mspec):
     return x
 
 def gen_mdspec(mdname, filename, extended=True):
+    """
+    Loads an m dwarf spectrum, fits a blackbody to extend the spectrum past 9200 A, 
+    and saves m dwarf spectrum as .npy file
 
+    Parameters  
+    -----------
+    mdname: str
+        mdwarf spectrum .fits filename
+    filename: str
+        filename to save .npy spectrum as
+    extended: bool
+        if True, extend spectrum with blackbody fit
+
+    Returns
+    -----------
+    None
+    """
     mdf = mdwarf_interp(mdname)
     md = mdf(WAVELENGTH)
 
@@ -182,7 +227,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, 
 def filt_interp(band,plotit=False, survey='DES',path=ROOTDIR):
 
     """
-    Imports and interpolates LSST filter
+    Imports and interpolates LSST or DES filter
 
     Parameters
     -----------
@@ -226,7 +271,7 @@ def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectranpy["m7"], ff=gl
         which LSST band to use
 
     temp: float
-        BB effective temperature
+        BB effective temperature in Kelvin
 
     mdname: string
        filename of mdwarf spectra .fits file
@@ -342,7 +387,7 @@ def lamb_eff_md(band, temp, mdpath = ROOTDIR + quiescent_spectranpy["m7"], ff=gl
 def lamb_eff_BB(band, temp, verbose=False):
 
     """
-    Calculates the effective wavelength in angstroms for BB sed
+    Calculates the effective wavelength in angstroms for blackbody-only sed
 
     Parameters
     -----------
@@ -350,7 +395,7 @@ def lamb_eff_BB(band, temp, verbose=False):
         which LSST band to use
 
     temp: float
-        BB effective temperature
+        BB effective temperature in Kelvin
 
     Returns
     -----------
@@ -413,7 +458,7 @@ def dcr_offset(w_eff, airmass, coord = None, header = None, chrDistCorr=False):
     Parameters
     -----------
     w_eff: float
-        effective wavelength
+        effective wavelength in angstroms
 
     airmass: float
         airmass value
@@ -447,6 +492,24 @@ def dcr_offset(w_eff, airmass, coord = None, header = None, chrDistCorr=False):
     return np.rad2deg(R) * 3600 
 
 def dcr_offset_inverse(w_eff_1, w_eff_0, dcr):
+    """
+    Given flaring and quiescent effective wavelengths and a delta dcr in arcsec,
+    this function calculates the airmass needed to produce observed delta dcr.
+
+    Parameters
+    -----------
+    w_eff_1: float
+        flaring effective wavelength in angstroms
+    w_eff_0: float
+        quiescent effective wavelength in angstroms
+    dcr: float  
+        delta dcr in arcsec
+
+    Returns
+    -----------
+    float
+        airmass needed to produce observed delta dcr
+    """
 
     q = np.deg2rad(dcr / 3600)
 
@@ -510,6 +573,28 @@ def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
     return newcmap
 
 def getsciimg(filefracday,paddedfield,filtercode,paddedccdid,imgtypecode,qid):
+    """
+    Downloads ZTF science image from IPAC
+    
+    Parameters
+    -----------
+    filefracday: str
+        filefracday string from ZTF filename (e.g. '20210930000234')
+    paddedfield: str
+        field number, zero-padded to 4 digits (e.g. '0123')
+    filtercode: str
+        filter code ('zg','zr','zi')
+    paddedccdid: str
+        ccdid, zero-padded to 2 digits (e.g. '01')
+    imgtypecode: str
+        image type code ('o','s','c')
+    qid: str
+        quadrant id ('1','2','3','4')
+
+    Returns
+    -----------
+    None
+    """
 
     year = filefracday[0:4]
     month = filefracday[4:6]
@@ -522,6 +607,24 @@ def getsciimg(filefracday,paddedfield,filtercode,paddedccdid,imgtypecode,qid):
     hdu.writeto('srcext/'+filefracday+'_'+paddedfield+'_sciimg'+'.fits', overwrite=True)
 
 def getrefimg(paddedfield,filtercode,paddedccdid,qid):
+    """
+    Downloads ZTF reference image from IPAC
+    
+    Parameters
+    -----------
+    paddedfield: str
+        field number, zero-padded to 4 digits (e.g. '0123')
+    filtercode: str
+        filter code ('zg','zr','zi')
+    paddedccdid: str
+        ccdid, zero-padded to 2 digits (e.g. '01')
+    qid: str
+        quadrant id ('1','2','3','4')
+
+    Returns
+    -----------
+    None
+    """
 
     fieldprefix = paddedfield[0:3]
 
@@ -530,12 +633,32 @@ def getrefimg(paddedfield,filtercode,paddedccdid,qid):
     hdu = fits.open(url)
     hdu.writeto('srcext/'+str(paddedfield)+'_refimg'+'.fits', overwrite=True)
 
-def srcext(file, det_thresh, ana_thresh, catname, ext_number=0):
-    #print(os.getcwd())
-    os.chdir('srcext')
+def srcext(file, det_thresh, ana_thresh, catname):
+    """
+    Runs SExtractor on a given file to create a catalog.
+    
+    Parameters
+    -----------
+    file: str
+        Path to the input image file.
+    det_thresh: float
+        Detection threshold for SExtractor.
+    ana_thresh: float
+        Analysis threshold for SExtractor.
+    catname: str
+        Name of the output catalog file.
+
+    Returns
+    -----------
+    pandas.DataFrame:
+        DataFrame containing the SExtractor catalog.
+    """
+
+    if os.getcwd().endswith('srcext') == False:
+        print('Changing directory to srcext...')
+        os.chdir('srcext')
+
     print('Making SExtractor catalog of '+file+'...')
-    #print(os.path.isfile(file))
-    #print(os.getcwd())
 
     if os.path.isfile(catname) == True:
         print('This catalogue already exists, moving on...')
@@ -567,6 +690,21 @@ def srcext(file, det_thresh, ana_thresh, catname, ext_number=0):
     return cata_df
 
 def xmatch(cat1, cat2):
+    """
+    Cross-matches two catalogs using astropy.coordinates.SkyCoord.
+    
+    Parameters
+    -----------
+    cat1: pandas.DataFrame
+        First catalog with 'ALPHA_SKY' and 'DELTA_SKY' columns.
+    cat2: pandas.DataFrame
+        Second catalog with 'ALPHA_SKY' and 'DELTA_SKY' columns.
+
+    Returns
+    -----------
+    tuple:
+        Indices of the matched sources in cat2, on-sky distances, and 3D distances.
+    """
 
     print("Matching catalogs...")
     c1 = SkyCoord(ra=cat1["ALPHA_SKY"]*u.degree, dec=cat1["DELTA_SKY"]*u.degree)
@@ -580,18 +718,27 @@ def xmatch(cat1, cat2):
 
     return idx, d2d, d3d
 
-def xmatch_gaia(cat1, cat2):
-
-    c1 = SkyCoord(ra=cat1["ALPHA_SKY"]*u.degree, dec=cat1["DELTA_SKY"]*u.degree)
-    c2 = SkyCoord(ra=cat2["ra"].values*u.degree, dec=cat2["dec"].values*u.degree)
-    idx, d2d, d3d = c1.match_to_catalog_sky(c2)
-
-    return idx, d2d, d3d
-
 def circle_cut(imgcen_ra, imgcen_dec, cat, radius):
-    '''
-    Returns indices from cat within radius of imgcenter
-    '''
+    """
+    Returns indices from cat within radius of image center
+
+    Parameters
+    -----------
+    imgcen_ra: float
+        Image center right ascension in degrees
+    imgcen_dec: float
+        Image center declination in degrees
+    cat: pandas.DataFrame
+        Catalog with 'ra' and 'dec' columns in degrees
+    radius: astropy.units.Quantity
+        Radius for circular cut (e.g., 0.5*u.degree)
+
+    Returns
+    -----------
+    numpy.ndarray:
+        Boolean array indicating which sources are within the specified radius
+
+    """
     
     c1 = SkyCoord(ra=imgcen_ra*u.degree, dec=imgcen_dec*u.degree)
     c2 = SkyCoord(ra=cat["ra"].values*u.degree, dec=cat["dec"].values*u.degree)
@@ -600,6 +747,20 @@ def circle_cut(imgcen_ra, imgcen_dec, cat, radius):
     return ind
 
 def calc_zenith(date, site):
+    """
+    Calculates the zenith position at a given date and location 
+    Parameters
+    -----------
+    date: float 
+        MJD date
+    site: str
+        site name (e.g. 'Cerro Pachon')
+
+    Returns
+    -----------
+    astropy.coordinates.SkyCoord:
+        ICRS coordinates of the zenith at the given date and location
+    """
 
     mtn = EarthLocation.of_site(site)
     mjd = Time(date, format='mjd')
@@ -609,6 +770,36 @@ def calc_zenith(date, site):
     return zenith
 
 def plot_shifts(ref_ra, ref_dec, sci_ra, sci_dec, zen_ra, zen_dec, flr_ind, mjd, am, centered=False):
+    """
+    Plots the DCR shifts of sources in RA and Dec
+    
+    Parameters  
+    -----------
+    ref_ra: ndarray
+        reference catalog right ascensions in degrees
+    ref_dec: ndarray
+        reference catalog declinations in degrees
+    sci_ra: ndarray
+        science catalog right ascensions in degrees
+    sci_dec: ndarray
+        science catalog declinations in degrees
+    zen_ra: float
+        zenith right ascension in degrees
+    zen_dec: float
+        zenith declination in degrees
+    flr_ind: int
+        index of the flare star in the catalog
+    mjd: float
+        MJD date of observation
+    am: float
+        airmass of observation
+    centered: bool
+        if True, center axes on centroid of points; if False, center on (0,0)
+
+    Returns
+    -----------
+    None
+    """
 
     #Calc delta coords
     d_ra = (ref_ra - sci_ra) * 3600
@@ -648,62 +839,6 @@ def plot_shifts(ref_ra, ref_dec, sci_ra, sci_dec, zen_ra, zen_dec, flr_ind, mjd,
     # Show ticks in the left and lower axes only
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-
-    ax.set_xlabel(r"$\Delta$ RA (arcsec)", labelpad=150)
-    ax.set_ylabel(r"$\Delta$ Dec (arcsec)", labelpad=150)
-    ax.set_xticks([-0.4,-0.2,0.2,0.4])
-    ax.set_xlim(-0.5,0.5)
-    ax.set_ylim(-0.5,0.5)
-    ax.set_title("MJD: {0}, Airmass = {1}".format(mjd, am))
-    ax.legend()
-    ax.grid(False)
-    
-    plt.gca().set_aspect('equal')
-
-def plot_shifts_gaia(ref_ra, ref_dec, sci_ra, sci_dec, zen_ra, zen_dec, flr_ind, mjd, am, circ_inds, colors, centered=False):
-
-    #Calc delta coords
-    d_ra = (ref_ra - sci_ra) * 3600
-    d_dec = (ref_dec - sci_dec) * 3600
-
-    #Calc zenith delta coord
-    d_zra = (ref_ra.mean() - zen_ra) * 3600
-    d_zdec = (ref_dec.mean() - zen_dec) * 3600
-
-    #Calc centroid
-    centroid = (sum(d_ra) / len(d_ra), sum(d_dec) / len(d_dec))
-
-    #Plotting
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    inners = ax.scatter(d_ra,d_dec, c = colors, cmap='RdBu_r', alpha=0.75)
-    #outers = ax.scatter(d_ra[~circ_inds],d_dec[~circ_inds], facecolors='none', edgecolors='black', label='peripheral (>0.5 deg)', alpha=0.5)
-    ax.scatter(d_ra[flr_ind], d_dec[flr_ind], color='chartreuse', s=100, marker='*', label='Flare star')
-
-    if not centered:
-        ax.scatter(centroid[0], centroid[1], color='k', marker='x', label="Centroid")
-
-    ax.plot([0,d_zra],[0,d_zdec], c='gray',ls='--', label="to zenith")
-
-    # Move left y-axis and bottim x-axis to centre, passing through (0,0)
-
-    if centered:
-        ax.spines['left'].set_position(('data', centroid[0]))
-        ax.spines['bottom'].set_position(('data', centroid[1]))
-    else:
-        ax.spines['left'].set_position('center')
-        ax.spines['bottom'].set_position('center')
-
-    # Eliminate upper and right axes
-    ax.spines['right'].set_color('none')
-    ax.spines['top'].set_color('none')
-
-    # Show ticks in the left and lower axes only
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-
-    cbar = plt.colorbar(inners)
-    cbar.set_label('Gaia g-rp (mag)', rotation=270, labelpad=20)
 
     ax.set_xlabel(r"$\Delta$ RA (arcsec)", labelpad=150)
     ax.set_ylabel(r"$\Delta$ Dec (arcsec)", labelpad=150)
@@ -891,6 +1026,27 @@ def dtan(dra, ddec, pa2):
     return np.sqrt(dra**2 + ddec**2) * np.sin((np.pi/2) - np.deg2rad(pa2) - np.arctan(ddec/dra))
 
 def gcd(lat1, lat2, lon1, lon2, haversine=False):
+    """
+    Calculate the great-circle distance between two points on the Earth specified in radians.
+    
+    Parameters
+    -----------
+    lat1: float
+        Latitude of the first point in radians
+    lat2: float
+        Latitude of the second point in radians
+    lon1: float
+        Longitude of the first point in radians
+    lon2: float
+        Longitude of the second point in radians
+    haversine: bool, optional
+        If True, use the haversine formula; otherwise, use the spherical law of cosines. Default is False.
+
+    Returns
+    -----------
+    float
+        Great-circle distance in radians
+    """
     dlat = np.abs(lat2 - lat1)
     dlon = np.abs(lon2 - lon1)
     dsig = np.arccos(np.sin(lat1) * np.sin(lat2) + np.cos(lat1) * np.cos(lat2) * np.cos(dlon))
@@ -901,6 +1057,27 @@ def gcd(lat1, lat2, lon1, lon2, haversine=False):
     return dsig
 
 def pa_error(h, dec, phi, dh, ddec):
+    """
+    Calculate the error in parallactic angle given errors in hour angle and declination
+    
+    Parameters
+    -----------
+    h: float
+        hour angle in hours
+    dec: float
+        declination in degrees
+    phi: float
+        latitude in degrees
+    dh: float
+        error in hour angle in hours
+    ddec: float
+        error in declination in degrees
+
+    Returns
+    -----------
+    float
+        error in parallactic angle in degrees
+    """
 
     h = h * ha2deg * deg2rad
     dec = dec * deg2rad
@@ -917,6 +1094,29 @@ def pa_error(h, dec, phi, dh, ddec):
     return err
 
 def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
+    """
+    Calculate the error in the zenith-parallel component of positional offset given errors in RA, Dec, and PA
+    
+    Parameters
+    -----------
+    dra: float
+        Change in right Ascension in degrees
+    ddec: float
+        Change in declination in degrees
+    pa2: float
+        Parallactic angle of second position in degrees
+    delra: float
+        Error in change in right Ascension in degrees
+    deldec: float
+        Error in change in declination in degrees
+    delpa2: float
+        Error in parallactic angle of second position in degrees
+
+    Returns
+    -----------
+    float
+        Error in zenith-parallel component of positional offset in degrees
+    """
 
     ddpar_ddra = (dra * np.sin(np.arctan(ddec/dra) + np.deg2rad(pa2)) - ddec * np.cos(np.arctan(ddec/dra) + np.deg2rad(pa2))) / np.sqrt(dra**2 + ddec**2)
     ddpar_dddec = (ddec * np.sin(np.arctan(ddec/dra) + np.deg2rad(pa2)) + dra * np.cos(np.arctan(ddec/dra) + np.deg2rad(pa2))) / np.sqrt(dra**2 + ddec**2)
@@ -927,6 +1127,25 @@ def dpar_error(dra, ddec, pa2, delra, deldec, delpa2):
     return err, ddpar_ddra, ddpar_dddec, ddpar_dpa2
 
 def obj2(T, weff, ff, linefrac):
+    """
+    Objective function to minimize the difference between a given weff and the weff calculated from a given Teff
+
+    Parameters
+    -----------
+    T: float
+        Effective temperature in Kelvin
+    weff: float
+        Effective wavelength in Angstroms
+    ff: float
+        Filling factor
+    linefrac: list
+        List of two floats representing the fraction of the flare energy in H and Ca lines, respectively
+
+    Returns
+    -----------
+    float
+        Absolute difference between the given weff and the weff calculated from the given Teff
+    """
 
     weff_test,_ ,_ = lamb_eff_md(band = 'g', temp = T, ff = ff, mdpath = 'sdsstemplates/m7.active.ha.na.k_ext.npy', 
                             lorentz_lines=True, linefrac=linefrac)
@@ -934,6 +1153,32 @@ def obj2(T, weff, ff, linefrac):
     return abs(weff - weff_test)
 
 def obj1(weff, dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta):
+    """
+    Objective function to minimize the difference between a calculated dpar and a given dpar
+    Parameters
+    -----------
+    weff: float
+        Effective wavelength in Angstroms
+    dpar_0: float
+        Given dpar value in arcseconds
+    dcr_q: float
+        Quiescent dcr value in arcseconds
+    airmass: float
+        Airmass value
+    batoid_a: float
+        Batoid parameter a
+    batoid_b: float
+        Batoid parameter b
+    batoid_c: float
+        Batoid parameter c
+    theta: float
+        Parallactic angle in degrees
+
+    Returns
+    -----------
+    float
+        Absolute difference between the calculated dpar and the given dpar
+    """
     
     R_0 = R0(weff)
     Z = np.arccos(1/airmass)
@@ -945,11 +1190,49 @@ def obj1(weff, dpar_0, dcr_q, airmass, batoid_a, batoid_b, batoid_c, theta):
 Nfeval = 1
 
 def callbackF(Xi):
+    """
+    Callback function for the optimization process to print the current evaluation number and parameters.
+
+    Parameters
+    -----------
+    Xi: ndarray
+        Current parameters being evaluated in the optimization process.
+    """
     global Nfeval
     print(Nfeval, obj1(Xi), Xi)
     Nfeval += 1
 
 def inverse_Teff(delta_dcr, quiescent_dcr, airmass, ff, source_coord=None, source_header=None, callback=False, return_weff = False, linefrac=[0.0, 0.0]):
+    """
+    Inverse calculation of effective temperature from delta DCR, quiescent DCR, airmass, filling factor, and source coordinates.
+
+    Parameters
+    -----------
+    delta_dcr: float
+        Delta DCR in arcseconds
+    quiescent_dcr: float
+        Quiescent DCR in arcseconds
+    airmass: float
+        Airmass value
+    ff: float
+        Filling factor
+    source_coord: astropy.coordinates.SkyCoord, optional
+        Source coordinates (RA, Dec) in degrees. If not provided, theta will be calculated from source_header.
+    source_header: astropy.io.fits.Header, optional
+        FITS header containing 'CENTRA' and 'CENTDEC' for calculating theta. Required if source_coord is not provided.
+    callback: bool, optional
+        If True, enables callback function to print optimization progress.
+    return_weff: bool, optional
+        If True, returns the effective wavelength along with the temperature.
+    linefrac: list, optional
+        List of two floats representing the fraction of the flare energy in H and Ca lines, respectively.
+
+    Returns
+    -----------
+    float or tuple:
+        If return_weff is True, returns a tuple containing the effective temperature in Kelvin, effective wavelength in angstroms, and theta in degrees.
+        If return_weff is False, returns only the effective temperature in Kelvin.
+    """
     
     dpar_0 = delta_dcr
     dcr_q = quiescent_dcr
@@ -975,6 +1258,25 @@ def inverse_Teff(delta_dcr, quiescent_dcr, airmass, ff, source_coord=None, sourc
         return result_2.x
     
 def inverseWeff(delta_dcr, quiescent_dcr, airmass, theta):
+    """
+    Inverse calculation of effective wavelength from delta DCR, quiescent DCR, airmass, and theta.
+
+    Parameters
+    -----------
+    delta_dcr: float
+        Delta DCR in arcseconds
+    quiescent_dcr: float
+        Quiescent DCR in arcseconds
+    airmass: float
+        Airmass value
+    theta: float
+        Zenith-anti field center angle in degrees
+
+    Returns
+    -----------
+    float:
+        Effective wavelength in angstroms.
+    """
     
     dpar_0 = delta_dcr
     dcr_q = quiescent_dcr
@@ -986,6 +1288,24 @@ def inverseWeff(delta_dcr, quiescent_dcr, airmass, theta):
     return result.x
 
 def inverseTeff(weff, ff, linefrac, callback=False):
+    """
+    Inverse calculation of effective temperature from effective wavelength, filling factor, and line fractions.
+    Unlike inverse_Teff, this function takes effective wavelength as input, skipping the weff calculation step.
+
+    Parameters
+    -----------
+    weff: float
+        Effective wavelength in angstroms
+    ff: float
+        Filling factor
+    linefrac: list
+        List of two floats representing the fraction of the flare energy in H and Ca lines, respectively.
+
+    Returns
+    -----------
+    float:
+        Effective temperature in Kelvin.
+    """
 
     init_guess_2 = 2800.0
     if callback:
@@ -998,6 +1318,21 @@ def inverseTeff(weff, ff, linefrac, callback=False):
 ###DMTN-037 refraction calculations
 
 def R(l, Z):
+    """
+    Calculate the refraction angle in arcseconds for a given wavelength and zenith angle.
+
+    Parameters
+    -----------
+    l: float
+        Wavelength in angstroms
+    Z: float
+        Zenith angle in degrees
+
+    Returns
+    -----------
+    float:
+        Refraction angle in arcseconds
+    """
 
     chi = CHI
     beta = BETA
@@ -1006,6 +1341,19 @@ def R(l, Z):
     return (chi * (n - 1) * (1 - beta) * np.tan(np.deg2rad(Z)) - chi * (1 - n) * (beta - ((n - 1) / 2)) * np.tan(np.deg2rad(Z))**3) * 3600
 
 def n_0(l):
+    """
+    Calculate the refractive index of air at a given wavelength.
+
+    Parameters
+    -----------
+    l: float
+        Wavelength in angstroms
+
+    Returns
+    -----------
+    float:
+        Refractive index of air
+    """
 
     sigma = 1e4 / l
     dn_s = (2371.34 + (683939.7 / (130 - sigma**2)) + (4547.3 / (38.9 - sigma**2))) * D_S * 1e-8
@@ -1016,6 +1364,21 @@ def n_0(l):
 ###
 
 def chrDistAng(coord, header):
+    """
+    Calculate the zenith-anti field center angle for a given source coordinate and header.
+
+    Parameters
+    -----------
+    coord: astropy.coordinates.SkyCoord
+        Source coordinates (RA, Dec) in degrees.
+    header: astropy.io.fits.Header
+        FITS header containing 'CENTRA' and 'CENTDEC' for calculating the zenith-anti field center angle.
+
+    Returns
+    -----------
+    float:
+        Zenith-anti field center angle in radians.
+    """
 
     source = np.array([coord.ra.value, coord.dec.value])
     zenith = np.zeros_like(source)
@@ -1037,6 +1400,23 @@ def chrDistAng(coord, header):
     return theta
 
 def chrDistCorr(wavelength, coord, header):
+    """
+    Calculate the chromatic distortion correction for a given wavelength, source coordinate, and header.
+    
+    Parameters
+    -----------
+    wavelength: float
+        Wavelength in angstroms.
+    coord: astropy.coordinates.SkyCoord
+        Source coordinates (RA, Dec) in degrees.
+    header: astropy.io.fits.Header
+        FITS header containing field center coordinates 'CENTRA' and 'CENTDEC'
+    
+    Returns
+    -----------
+    float:
+        Chromatic distortion correction in arcseconds.
+    """
 
     source = np.array([coord.ra.value, coord.dec.value])
     zenith = np.zeros_like(source)
@@ -1064,46 +1444,3 @@ def chrDistCorr(wavelength, coord, header):
     dist_mag = f(new_w)[np.where(abs(new_w - wavelength) == abs(new_w - wavelength).min())[0]]
 
     return dist_mag * np.cos(theta)
-
-
-def find_min_max_adjacent(array, index):
-    # Get the row and column from the index
-    row, col = index
-    
-    # Get the dimensions of the 2D array
-    rows, cols = array.shape
-    
-    # List to store the adjacent indices
-    adjacent_indices = []
-    
-    # Directions for the 8 possible adjacent cells (including diagonals)
-    directions = [(-1, -1), (-1, 0), (-1, 1),
-                  (0, -1),         (0, 1),
-                  (1, -1), (1, 0), (1, 1)]
-    
-    # Iterate over the directions and find the valid adjacent cells
-    for dr, dc in directions:
-        new_row, new_col = row + dr, col + dc
-        if 0 <= new_row < rows and 0 <= new_col < cols:
-            adjacent_indices.append((new_row, new_col))
-    
-    # Extract the values of the adjacent cells
-    adjacent_values = [array[r, c] for r, c in adjacent_indices]
-    
-    # Find the min and max values and their corresponding indices
-    min_value = min(adjacent_values)
-    max_value = max(adjacent_values)
-    
-    min_index = adjacent_indices[adjacent_values.index(min_value)]
-    max_index = adjacent_indices[adjacent_values.index(max_value)]
-    
-    return min_index, max_index
-
-def variance_weighted_mean(values, errors):
-
-    weights = 1 / errors**2
-    normWeights = np.array([w / np.sum(weights) for w in weights])
-
-    return np.sum(values * normWeights)
-
-
