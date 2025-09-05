@@ -13,11 +13,7 @@ import scipy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
-import sys
-sys.path.append('.')
-
-import rubin_sims
-import rubin_sim.phot_utils.bandpass as Bandpass
+#import rubin_sim.phot_utils.bandpass as Bandpass
 #import rubin_sim.phot_utils.Sed as Sed
 
 from config import *
@@ -245,6 +241,13 @@ def filt_interp(band,plotit=False, survey='DES', path=ROOTDIR):
     """
 
     if survey == 'LSST':
+        import sys
+        sys.path.append('.')
+
+        #import rubin_sims
+        import rubin_sim.phot_utils.bandpass as Bandpass
+        import rubin_sim.phot_utils.Sed as Sed
+
         lsst = {}
         lsst[band] = Bandpass()
         lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
