@@ -244,7 +244,7 @@ def filt_interp(band,plotit=False, survey='DES', path=ROOTDIR):
         import sys
         sys.path.append('.')
 
-        #import rubin_sims
+        import rubin_sims
         from rubin_sim import phot_utils
         #import rubin_sim.phot_utils.Sed as Sed
 
