@@ -13,6 +13,7 @@ import scipy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
+import sys
 sys.path.append('.')
 
 import rubin_sims
