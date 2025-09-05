@@ -245,11 +245,11 @@ def filt_interp(band,plotit=False, survey='DES', path=ROOTDIR):
         sys.path.append('.')
 
         #import rubin_sims
-        import rubin_sim.phot_utils.bandpass as Bandpass
-        import rubin_sim.phot_utils.Sed as Sed
+        from rubin_sim import 
+        #import rubin_sim.phot_utils.Sed as Sed
 
         lsst = {}
-        lsst[band] = Bandpass()
+        lsst[band] = phot_utils.bandpass()
         lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
 
         sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
