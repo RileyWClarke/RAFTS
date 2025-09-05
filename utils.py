@@ -240,16 +240,12 @@ def filt_interp(band,plotit=False, survey='DES', path=ROOTDIR):
         function that interpolates filtx,filty
     """
 
+
     if survey == 'LSST':
-        import sys
-        sys.path.append('.')
-
-        import rubin_sims
-        from rubin_sim import phot_utils
-        #import rubin_sim.phot_utils.Sed as Sed
-
+        from rubin_sim.photUtils import Bandpass
         lsst = {}
-        lsst[band] = phot_utils.bandpass()
+        lsst[band] = Bandpass()
+        lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
         lsst[band].readThroughput(path + '/baseline/total_' + band + '.dat')
 
         sb, w = lsst[band].sb, lsst[band].wavelen*10 #scale flux, conv nm to A
