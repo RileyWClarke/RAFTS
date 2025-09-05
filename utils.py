@@ -13,6 +13,7 @@ import scipy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
+import rubin_sims
 import rubin_sim.phot_utils.bandpass as Bandpass
 #import rubin_sim.phot_utils.Sed as Sed
 
