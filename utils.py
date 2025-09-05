@@ -13,7 +13,7 @@ import scipy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
-#import rubin_sim.phot_utils.bandpass as Bandpass
+import rubin_sim.phot_utils.bandpass as Bandpass
 #import rubin_sim.phot_utils.Sed as Sed
 
 from config import *
@@ -224,7 +224,7 @@ def compspec(temp, md, ff, balmer_ratio = 1, lorentz_lines=False, linefrac=0.0, 
     return md + ((bb * ff**2) * balmer_step)
 
 
-def filt_interp(band,plotit=False, survey='DES',path=ROOTDIR):
+def filt_interp(band,plotit=False, survey='DES', path=ROOTDIR):
 
     """
     Imports and interpolates LSST or DES filter
