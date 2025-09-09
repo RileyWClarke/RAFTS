@@ -17,6 +17,7 @@ venv/
 #Jupyter checkpoints
 .ipynb_checkpoints
 .DS_Store
+**/.DS_Store
 
 #SExtractor
 srcext/*.cat
