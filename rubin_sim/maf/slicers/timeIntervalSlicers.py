@@ -49,7 +49,7 @@ class TimeIntervalSlicer(BaseSlicer):
         self,
         interval_seconds=90,
         mjd_column_name="observationStartMJD",
-        badval=np.NaN,
+        badval=np.nan,
         verbose=False,
     ):
         super().__init__(verbose=verbose, badval=badval)
@@ -150,7 +150,7 @@ class BlockIntervalSlicer(TimeIntervalSlicer):
         mjd_column_name="observationStartMJD",
         duration_column_name="visitTime",
         note_column_name="note",
-        badval=np.NaN,
+        badval=np.nan,
         verbose=False,
     ):
         super().__init__(verbose=verbose, badval=badval)
@@ -254,7 +254,7 @@ class VisitIntervalSlicer(TimeIntervalSlicer):
         mjd_column_name="observationStartMJD",
         duration_column_name="visitTime",
         extra_column_names=tuple(),
-        badval=np.NaN,
+        badval=np.nan,
         verbose=False,
     ):
         super().__init__(verbose=verbose, badval=badval)

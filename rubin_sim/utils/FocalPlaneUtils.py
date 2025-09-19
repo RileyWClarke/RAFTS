@@ -201,8 +201,8 @@ def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includ
         try:
             x, y = palpy.ds2tp(ra_obs, dec_obs, ra_pointing, dec_pointing)
         except:
-            x = np.NaN
-            y = np.NaN
+            x = np.nan
+            y = np.nan
     else:
         try:
             x, y = palpy.ds2tpVector(ra_obs, dec_obs, ra_pointing, dec_pointing)
@@ -215,8 +215,8 @@ def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includ
                 try:
                     xx, yy = palpy.ds2tp(rr, dd, ra_pointing, dec_pointing)
                 except:
-                    xx = np.NaN
-                    yy = np.NaN
+                    xx = np.nan
+                    yy = np.nan
                 x.append(xx)
                 y.append(yy)
             x = np.array(x)
