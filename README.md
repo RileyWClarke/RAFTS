@@ -2,4 +2,10 @@
 
 Flares + Rubin LSST Ph.D Project
 
-This repo is primarily for backup purposes
+## Abstract
+
+I have developed and demonstrated a novel method to study stellar flare temperatures in the era of large, ground-based astronomical surveys by taking advantage of Differential Chromatic Refraction (DCR). This effect manifests as an apparent, colordependent shift in source position towards the zenith of an observer, and must be corrected for in order to ensure accurate astrometric solutions. Despite this, multiple studies have shown how DCR can be employed as a tool to extract additional color information from source astrometry, and this work applies this method to stellar flares for the first time. Flares are particularly well suited to this technique due to their heightened frequency on M dwarfs, stars less massive than the Sun that make up the majority of stars in our galaxy. Due to their ubiquity across various regions of the sky, and the dramatic contrast between the red photosphere and blue flare emission, flares on M dwarfs offer an ideal opportunity to use DCR to infer effective flare temperatures across the unprecedentedly large sample of flares that will be detected in next-generation astronomical surveys, such as the Legacy Survey of Space and Time (LSST) that will be carried out by the Vera C. Rubin Observatory, starting in 2025. By combining Rubin’s high image quality and astrometric precision with the truly massive amount of data it will produce over 10 years, DCR can be used to carry out a population-level statistical analysis of stellar flare temperatures. We additionally validated this technique on flare data obtained from an LSST precursor survey called the Deeper, Wider, Faster Programme, and showed how certain choices made when modeling the spectral and geometric properties of the flare could lead to overestimating the true flare temperature. Finally, we describe the framework for a value-added catalog of stellar flares detected in the LSST alert stream and data releases.
+
+## Usage
+
+For reproducability of Clarke+2025, please see the readme located in the /DWF_DCR_flare/ directory for a description of the paper workflow.
