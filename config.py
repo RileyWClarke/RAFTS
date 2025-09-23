@@ -3,11 +3,12 @@ from astropy import units as u
 from astropy import constants as c
 from astropy.coordinates import EarthLocation
 
+from pathlib import Path
 
 WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
 WMAX = 9200
-ROOTDIR = '/Users/fbianco/RAFTS/'
+ROOTDIR = str(Path(__file__).resolve().parent) + '/'
 MDSPEC = ROOTDIR + 'sdsstemplates/m5.active.ha.na.k.fits'
 
 #Flare star params
