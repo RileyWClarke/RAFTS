@@ -8,4 +8,4 @@ I have developed and demonstrated a novel method to study stellar flare temperat
 
 ## Usage
 
-For reproducability of Clarke+2025, please see the readme located in the /DWF_DCR_flare/ directory for a description of the paper workflow.
+For reproducability of Clarke+2025, please see the readme located in the Notebooks/DWF_DCR_flare/ directory for a description of the paper workflow.
