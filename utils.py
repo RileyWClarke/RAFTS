@@ -1449,13 +1449,13 @@ def chrDistCorr(wavelength, coord, header):
 
     return dist_mag * np.cos(theta)
 
-def excursion(band, spt, plot=False):
+def excursion(band, temp, spt, plot=False):
 
     wav = np.arange(100, 12000) * u.AA
     plx = 10.0
     dist = 1000 / plx * u.pc
     Rstar = 0.1 * u.Rsun
-    t = 5000 
+    t = temp 
     a = 0.0025
     balmer_ratio = 1
 
