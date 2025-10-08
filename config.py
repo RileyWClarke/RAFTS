@@ -5,6 +5,17 @@ from astropy.coordinates import EarthLocation
 
 from pathlib import Path
 
+filters = ['u', 'g', 'r', 'i', 'z', 'y']
+
+filtercolors = {
+            "u": "#66CCEE",
+            "g": "#228833",
+            "r": "#CCBB44",
+            "i": "#EE6677",
+            "z": "#AA3377",
+            "y": "#4B3713",
+            " ": None}
+
 WAVELENGTH = np.arange(0, 12001, 1)
 WMIN = 3825
 WMAX = 9200
