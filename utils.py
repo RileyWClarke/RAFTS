@@ -1449,7 +1449,7 @@ def chrDistCorr(wavelength, coord, header):
 
     return dist_mag * np.cos(theta)
 
-def excursion(band, spt):
+def excursion(band, spt, plot=False):
 
     wav = np.arange(100, 12000) * u.AA
     plx = 10.0
@@ -1512,29 +1512,29 @@ def excursion(band, spt):
     print('max fade rate = {} mag/min'.format((delta / 4.9))) 
     print('min fade rate = {} mag/min'.format((delta / 216.8))) 
 
+    if plot:
+        with quantity_support():
+            fig, ax = plt.subplots()
+            ax.plot(wav, bb(wav)*a**2, ls='--', c='k')
+            ax.plot(wav, bbdm, c='C3')
+            ax.plot(wav, combined_bb, c='C0')
+            ax.set_ylim(None, combined_bb.max() * 1.2)
+            ax.set_xlabel(r'Wavelength ($\AA$)', fontsize=12)
+            ax.set_ylabel(ax.get_ylabel(), fontsize=12)
+            ax.set_title('T = {} K, SpT = {}, band = {}'.format(t, spt, band))
+            ax.yaxis.set_tick_params(labelsize=12)
+            ax.xaxis.set_tick_params(labelsize=12)
 
-    with quantity_support():
-        fig, ax = plt.subplots()
-        ax.plot(wav, bb(wav)*a**2, ls='--', c='k')
-        ax.plot(wav, bbdm, c='C3')
-        ax.plot(wav, combined_bb, c='C0')
-        ax.set_ylim(None, combined_bb.max() * 1.2)
-        ax.set_xlabel(r'Wavelength ($\AA$)', fontsize=12)
-        ax.set_ylabel(ax.get_ylabel(), fontsize=12)
-        ax.set_title('T = {} K, SpT = {}, band = {}'.format(t, spt, band))
-        ax.yaxis.set_tick_params(labelsize=12)
-        ax.xaxis.set_tick_params(labelsize=12)
+            ax2 = ax.twinx()
+            ax2.set_ylabel('Filter Throughput', fontsize=16)
+            ax2.tick_params(axis ='y')
+            ax2.yaxis.set_tick_params(labelsize=12)
 
-        ax2 = ax.twinx()
-        ax2.set_ylabel('Filter Throughput', fontsize=16)
-        ax2.tick_params(axis ='y')
-        ax2.yaxis.set_tick_params(labelsize=12)
+            for f in filters:
+                func = filt_interp(band=f, survey='LSST')
+                if f == band:
+                    ax2.plot(wav, func(wav), c=filtercolors[f])
+                else:
+                    ax2.plot(wav, func(wav), c='grey', alpha=0.3)
 
-        for f in filters:
-            func = filt_interp(band=f, survey='LSST')
-            if f == band:
-                ax2.plot(wav, func(wav), c=filtercolors[f])
-            else:
-                ax2.plot(wav, func(wav), c='grey', alpha=0.3)
-
-        plt.show()
+            plt.show()
