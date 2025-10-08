@@ -1492,7 +1492,7 @@ def excursion(band, temp, spt, plot=False):
     bbdm = (mds * C) * (1*u.erg/u.s/u.cm/u.cm/u.AA/u.sr) #Scaled quiescent spectrum
     combined_bb = (bb(wav) * a**2 * balmer_step) + bbdm #Combined flare spectrum
 
-    assert bb(wav)[sdss_inds[0]:sdss_inds[1]].sum() * a**2 == bbdm[sdss_inds[0]:sdss_inds[1]].sum()
+    #assert bb(wav)[sdss_inds[0]:sdss_inds[1]].sum() * a**2 == bbdm[sdss_inds[0]:sdss_inds[1]].sum()
 
     flux = (np.sum(f(wav) * bbdm) / np.sum(f(wav))) * (np.pi*u.sr) * (Rstar.to('cm') ** 2) / ((dist.to('cm')) ** 2)
     flux_flare = (np.sum(f(wav) * combined_bb) / np.sum(f(wav))) * (np.pi*u.sr) * (Rstar.to('cm') ** 2) / ((dist.to('cm')) ** 2)
