@@ -1493,20 +1493,19 @@ def excursion(band, temp, spt, survey, balmer_ratio=1, plot=False, verbose=True)
     t = temp 
     a = 0.001
 
-    with fits.open(ROOTDIR + 'sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
-        data = hdulist[0].data[0]
-        header = hdulist[0].header
-        wstart = hdulist[0].header[3]
-        wstep = hdulist[0].header[5]
-        wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
-
     f = filt_interp(band=band, survey=survey)
 
     if spt == 'flat':
         mds = np.zeros_like(wav)
     else:
-        g = interp1d(wave, data, bounds_error=False, fill_value=0.0)
-        mds = g(wav)
+        with fits.open(ROOTDIR + 'sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
+            data = hdulist[0].data[0]
+            header = hdulist[0].header
+            wstart = hdulist[0].header[3]
+            wstep = hdulist[0].header[5]
+            wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
+            g = interp1d(wave, data, bounds_error=False, fill_value=0.0)
+            mds = g(wav)
 
     sdss_inds = [np.where(wav == WMIN * u.AA)[0][0], np.where(wav == WMAX * u.AA)[0][0].sum()]
 
