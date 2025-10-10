@@ -1492,7 +1492,7 @@ def excursion(band, temp, spt, survey, plot=False, verbose=True):
     a = 0.001
     balmer_ratio = 1
 
-    with fits.open('/Users/riley/Desktop/RAFTS/sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
+    with fits.open(ROOTDIR + '/RAFTS/sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
         data = hdulist[0].data[0]
         header = hdulist[0].header
         wstart = hdulist[0].header[3]
