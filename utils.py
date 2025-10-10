@@ -1496,7 +1496,7 @@ def excursion(band, temp, spt, survey, balmer_ratio=1, plot=False, verbose=True)
     f = filt_interp(band=band, survey=survey)
 
     if spt == 'flat':
-        mds = np.zeros_like(wav)
+        mds = np.zeros_like(wav).value
     else:
         with fits.open(ROOTDIR + 'sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
             data = hdulist[0].data[0]
@@ -1508,7 +1508,7 @@ def excursion(band, temp, spt, survey, balmer_ratio=1, plot=False, verbose=True)
             mds = g(wav)
 
     sdss_inds = [np.where(wav == WMIN * u.AA)[0][0], np.where(wav == WMAX * u.AA)[0][0].sum()]
-
+    print(mds)
     ##Augment spectra
     def fitbb_to_m5(a, T, m5spec):
         bb = make_bb(wav, 3000) * 1e27 * a
