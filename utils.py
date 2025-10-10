@@ -1456,20 +1456,22 @@ def chrDistCorr(wavelength, coord, header):
 
     return dist_mag * np.cos(theta)
 
-def excursion(band, temp, spt, survey, plot=False, verbose=True):
+def excursion(band, temp, spt, survey, balmer_ratio=1, plot=False, verbose=True):
     """
     Calculate the change in magnitude (delta mag) for a flare on an M dwarf star in a given photometric band.
 
     Parameters
     -----------
     band: str
-        Photometric band (e.g., 'g', 'r', 'i', 'z', 'y')
+        Photometric band (e.g., 'u', 'g', 'r', 'i', 'z', 'y')
     temp: float
         Effective temperature of the flare in Kelvin
     spt: str
         Spectral type of the M dwarf (e.g., 'm0', 'm1', ..., 'm9')
     survey: str
         Survey name ('LSST' or 'DES')
+    balmer_ratio: float, optional
+        Ratio of Balmer continuum to blackbody emission. Default is 1.
     plot: bool, optional
         If True, plot the flare spectrum components. Default is False.
     verbose: bool, optional
@@ -1490,7 +1492,6 @@ def excursion(band, temp, spt, survey, plot=False, verbose=True):
     Rstar = 0.1 * u.Rsun
     t = temp 
     a = 0.001
-    balmer_ratio = 1
 
     with fits.open(ROOTDIR + 'sdsstemplates/{}.active.ha.na.k.fits'.format(spt), mode="readonly") as hdulist:
         data = hdulist[0].data[0]
@@ -1500,8 +1501,12 @@ def excursion(band, temp, spt, survey, plot=False, verbose=True):
         wave = np.arange(wstart,wstart + len(data) * wstep,wstep)
 
     f = filt_interp(band=band, survey=survey)
-    g = interp1d(wave, data, bounds_error=False, fill_value=0.0)
-    mds = g(wav)
+
+    if spt == 'flat':
+        mds = np.zeros_like(wav)
+    else:
+        g = interp1d(wave, data, bounds_error=False, fill_value=0.0)
+        mds = g(wav)
 
     sdss_inds = [np.where(wav == WMIN * u.AA)[0][0], np.where(wav == WMAX * u.AA)[0][0].sum()]
 
